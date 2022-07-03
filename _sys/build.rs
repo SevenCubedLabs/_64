@@ -9,6 +9,7 @@ fn main() {
         .derive_debug(false)
         .derive_eq(false)
         .header("src/bindings.h")
+        .clang_arg("-I/usr/include/SDL2/")
         .blocklist_item("FP_.*")
         .use_core()
         .ctypes_prefix("crate::c_types")
