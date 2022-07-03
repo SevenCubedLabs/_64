@@ -3,20 +3,6 @@
 version = 3
 
 [[package]]
-name = "_64"
-version = "0.1.0"
-dependencies = [
- "_sys",
-]
-
-[[package]]
-name = "_sys"
-version = "0.1.0"
-dependencies = [
- "bindgen",
-]
-
-[[package]]
 name = "aho-corasick"
 version = "0.7.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -315,6 +301,20 @@ name = "textwrap"
 version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b1141d4d61095b28419e22cb0bbf02755f5e54e0526f97f1e3d1d160e60885fb"
+
+[[package]]
+name = "underscore_64"
+version = "0.1.0"
+dependencies = [
+ "underscore_sys",
+]
+
+[[package]]
+name = "underscore_sys"
+version = "0.1.0"
+dependencies = [
+ "bindgen",
+]
 
 [[package]]
 name = "unicode-ident"
