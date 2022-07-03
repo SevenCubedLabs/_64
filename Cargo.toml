@@ -5,7 +5,7 @@ authors = ["Zeno <zeno@sevencubed.tech>"]
 edition = "2018"
 
 [dependencies]
-_sys = {path ="./_sys"}
+_sys = { path = "./_sys", version = "0.1.0"}
 
 [features]
 minsize = []
