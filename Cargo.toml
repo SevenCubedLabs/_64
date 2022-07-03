@@ -1,11 +1,14 @@
 [package]
-name = "_64"
+name = "underscore_64"
+description = "A minsize focused multimedia library"
 version = "0.1.0"
+license-file = "LICENSE.md"
 authors = ["Zeno <zeno@sevencubed.tech>"]
 edition = "2018"
 
-[build-dependencies]
-bindgen = "0.60"
+[workspace]
+[dependencies]
+underscore_sys = { path = "./_sys", version = "0.1.0"}
 
 [features]
 minsize = []

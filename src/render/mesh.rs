@@ -1,10 +1,10 @@
 use super::{buffer::Buffer, vertex::Vertex};
-use crate::sys::*;
-use alloc::vec::Vec;
+use crate::data::List;
+use _sys::*;
 
 pub struct Mesh {
     vao: GLuint,
-    _vertices: Vec<Buffer>,
+    _vertices: List<Buffer>,
     indices: Buffer,
 }
 
@@ -17,7 +17,7 @@ impl Mesh {
                 glBindVertexArray(vao);
                 vao
             },
-            vertices: Vec::new(),
+            vertices: List::new(),
             indices: None,
         }
     }
@@ -37,7 +37,7 @@ impl Mesh {
 
 pub struct MeshBuilder {
     vao: GLuint,
-    vertices: Vec<Buffer>,
+    vertices: List<Buffer>,
     indices: Option<Buffer>,
 }
 
