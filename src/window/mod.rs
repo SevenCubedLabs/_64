@@ -1,5 +1,5 @@
 use crate::render::Context;
-use crate::sys::*;
+use _sys::*;
 
 pub struct Window(*mut SDL_Window);
 

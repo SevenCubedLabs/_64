@@ -1,4 +1,4 @@
-use crate::sys::{free, malloc, memcpy};
+use _sys::{free, malloc, memcpy};
 use core::mem::size_of;
 
 pub struct Page<Item: Sized> {

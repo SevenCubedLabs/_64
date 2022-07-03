@@ -3,7 +3,7 @@ pub mod mesh;
 pub mod program;
 pub mod shader;
 pub mod vertex;
-use crate::sys::*;
+use _sys::*;
 
 pub struct Context(SDL_GLContext);
 
