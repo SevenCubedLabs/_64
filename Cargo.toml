@@ -4,8 +4,8 @@ version = "0.1.0"
 authors = ["Zeno <zeno@sevencubed.tech>"]
 edition = "2018"
 
-[build-dependencies]
-bindgen = "0.60"
+[dependencies]
+_sys = {path ="./_sys"}
 
 [features]
 minsize = []

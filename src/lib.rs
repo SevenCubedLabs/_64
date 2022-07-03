@@ -13,8 +13,7 @@ mod data {
 
     pub type List<Item> = alloc::vec::Vec<Item>;
 }
-mod sys;
 
 pub fn exit(code: i32) {
-    unsafe { sys::exit(code) };
+    unsafe { _sys::exit(code) };
 }

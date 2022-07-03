@@ -1,5 +1,5 @@
 use super::shader::Shader;
-use crate::sys::*;
+use _sys::*;
 
 pub struct Program(GLuint);
 

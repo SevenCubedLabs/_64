@@ -1,5 +1,6 @@
 use super::{buffer::Buffer, vertex::Vertex};
-use crate::{data::List, sys::*};
+use crate::data::List;
+use _sys::*;
 
 pub struct Mesh {
     vao: GLuint,
