@@ -1,6 +1,8 @@
 [package]
 name = "underscore_64"
+description = "A minsize focused multimedia library"
 version = "0.1.0"
+license-file = "LICENSE.md"
 authors = ["Zeno <zeno@sevencubed.tech>"]
 edition = "2018"
 
