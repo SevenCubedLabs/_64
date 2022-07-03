@@ -26,6 +26,8 @@ pub unsafe extern "C" fn _start() {
     asm!("mov rdi, rsp", "call main", options(noreturn))
 }
 
+extern crate underscore_64 as _64;
+
 const NAME: &str = "_64\0";
 const POS: &str = concat!(include_str!("shaders/pos.vert"), "\0");
 const WHITE: &str = concat!(include_str!("shaders/white.frag"), "\0");
