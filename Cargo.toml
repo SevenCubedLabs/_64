@@ -1,11 +1,12 @@
 [package]
-name = "_64"
+name = "underscore_64"
 version = "0.1.0"
 authors = ["Zeno <zeno@sevencubed.tech>"]
 edition = "2018"
 
+[workspace]
 [dependencies]
-_sys = { path = "./_sys", version = "0.1.0"}
+underscore_sys = { path = "./_sys", version = "0.1.0"}
 
 [features]
 minsize = []
