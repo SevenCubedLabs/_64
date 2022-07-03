@@ -32,7 +32,6 @@ const WHITE: &str = concat!(include_str!("shaders/white.frag"), "\0");
 
 #[cfg_attr(feature = "minsize", no_mangle)]
 pub fn main() {
-    use _64::utils::*;
     use _64::{
         event::{Event, EventFeed},
         render::{clear, mesh::Mesh, program::Program},
@@ -70,5 +69,6 @@ pub fn main() {
         }
     }
 
-    exit(0);
+    #[cfg(feature = "minsize")]
+    _64::exit(0);
 }

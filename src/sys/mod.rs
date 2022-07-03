@@ -4,52 +4,6 @@
 #![allow(improper_ctypes)]
 #![allow(dead_code)]
 
-pub mod utils {
-    pub struct Allocator;
-
-    unsafe impl core::alloc::GlobalAlloc for Allocator {
-        unsafe fn alloc(&self, layout: core::alloc::Layout) -> *mut u8 {
-            super::malloc(layout.size() as _) as _
-        }
-
-        unsafe fn dealloc(&self, ptr: *mut u8, _layout: core::alloc::Layout) {
-            super::free(ptr as _);
-        }
-    }
-
-    pub const STDOUT: LinuxFd = LinuxFd(1);
-
-    pub struct LinuxFd(i32);
-
-    impl LinuxFd {
-        pub fn write(&self, bytes: &str) -> Result<(), i64> {
-            unsafe {
-                let res;
-                core::arch::asm!(
-                    "syscall",
-                    in("rax") 1,
-                    in("rdi") self.0,
-                    in("rsi") bytes.as_ptr(),
-                    in("rdx") bytes.len(),
-                    lateout("rax") res,
-                );
-
-                if res == bytes.len() as _ {
-                    Ok(())
-                } else {
-                    Err(res)
-                }
-            }
-        }
-    }
-
-    pub fn exit(code: i32) {
-        unsafe {
-            super::exit(code);
-        }
-    }
-}
-
 mod c_types {
     pub type c_short = i16;
     pub type c_int = i32;

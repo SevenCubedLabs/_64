@@ -4,7 +4,6 @@
 pub mod event;
 pub mod render;
 pub mod window;
-pub use sys::utils;
 
 #[cfg(feature = "minsize")]
 mod data;
@@ -15,3 +14,7 @@ mod data {
     pub type List<Item> = alloc::vec::Vec<Item>;
 }
 mod sys;
+
+pub fn exit(code: i32) {
+    unsafe { sys::exit(code) };
+}
