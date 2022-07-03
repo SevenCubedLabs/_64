@@ -16,7 +16,7 @@ impl Mesh {
                 glBindVertexArray(vao);
                 vao
             },
-            vertices: List::new(1),
+            vertices: List::new(),
             indices: None,
         }
     }

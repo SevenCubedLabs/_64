@@ -6,9 +6,9 @@ pub struct List<Item: Sized> {
 }
 
 impl<Item: Sized> List<Item> {
-    pub fn new(capacity: usize) -> Self {
+    pub fn new() -> Self {
         Self {
-            data: Page::new(capacity),
+            data: Page::new(1),
             len: 0,
         }
     }
