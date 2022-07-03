@@ -1,0 +1,6 @@
+[submodule "smol"]
+	path = smol
+	url = git@github.com:porocyon/smol
+[submodule "onekpaq"]
+	path = onekpaq
+	url = git@github.com:porocyon/onekpaq
