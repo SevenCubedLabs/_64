@@ -11,11 +11,18 @@ jobs:
              echo "NIGHTLY=$NIGHTLY" >> $GITHUB_ENV
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
-        name: Cache Crates
         id: cache-crates
         with:
           path: ${{ env.CARGO_HOME }}
-          key: ${{ env.NIGHTLY }}-${{ env.TARGET }}-${{ hashFiles('**/Cargo.lock') }}      
+          key: ${{ env.NIGHTLY }}-${{ env.TARGET }}-${{ hashFiles('**/Cargo.lock') }}         
+      - uses: actions/cache@v3
+        id: cache-deps
+        with:
+          path: target/
+          key: ${{ env.NIGHTLY }}-${{ env.TARGET }}-${{ hashFiles('**/Cargo.lock') }}
+      
       - run: cargo fetch
         if: steps.cache-crates.outputs.cache-hit != 'true'
+      - run: cargo build --release
+        if: steps.cache-deps.outputs.cache-hit != 'true'
       - run: cargo test --release
