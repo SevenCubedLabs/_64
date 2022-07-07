@@ -5,7 +5,8 @@ jobs:
     runs-on: ubuntu-latest
     container: zeno343/underscore_build:latest
     steps:
-      - run: echo "CARGO_HOME=$CARGO_HOME >> $GITHUB_ENV"
+      - run: |
+             echo "CARGO_HOME=$CARGO_HOME >> $GITHUB_ENV"
              echo "TARGET=$TARGET >> $GITHUB_ENV"
              echo "NIGHTLY=$NIGHTLY >> $GITHUB_ENV"
       - uses: actions/checkout@v3
@@ -13,6 +14,6 @@ jobs:
         name: Cache Crates
         id: cache-crates
         with:
-          path: $CARGO_HOME
+          path: ${{ env.CARGO_HOME }}
           key: ${{ env.NIGHTLY }}-${{ env.TARGET }}-${{ hashFiles('**/Cargo.lock') }}      
       - run: cargo fetch
