@@ -4,8 +4,8 @@ ENV RUSTUP_HOME=/usr/local/rustup \
 	NIGHTLY=2022-06-20 \
 	TARGET=x86_64-unknown-linux-gnu
 ENV PATH=$CARGO_HOME/bin:$PATH
-RUN echo $PATH && \
- 	apt-get update && \
-	apt-get install -y curl && \
-	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --profile minimal -y && \
+RUN apt-get update && \
+	apt-get install -y gcc libsdl2-dev curl
+RUN	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+	| sh -s -- --profile minimal -y --default-toolchain nightly-$NIGHTLY && \
 	rustup install nightly-$NIGHTLY-$TARGET
