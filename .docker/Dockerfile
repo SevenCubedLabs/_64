@@ -9,7 +9,3 @@ RUN echo $PATH && \
 	apt-get install -y curl && \
 	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --profile minimal -y && \
 	rustup install nightly-$NIGHTLY-$TARGET
-
-FROM debian:buster-slim
-COPY --from=rustup $CARGO_HOME $CARGO_HOME
-COPY --from=rustup $RUSTUP_HOME $RUSTUP_HOME
