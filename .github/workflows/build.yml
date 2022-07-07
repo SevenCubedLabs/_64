@@ -6,6 +6,6 @@ jobs:
     container: zeno343/underscore_build:latest
     steps:
       - uses: actions/checkout@v3
-      - run: ls $CARGO_HOME/bin && cargo build --release
+      - run: cargo build --release
         env:
           CARGO_HOME: /usr/local/cargo
