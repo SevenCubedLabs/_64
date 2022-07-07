@@ -2,6 +2,7 @@ name: Build And Test
 on: [pull_request]
 jobs:
   build:
+    id: build
     runs-on: ubuntu-latest
     container: zeno343/underscore_build:latest
     steps:
@@ -10,6 +11,6 @@ jobs:
         name: Cache Crates
         id: cache-crates
         with:
-          path: ${{ jobs.build.container.env.CARGO_HOME }}
-          key: ${{ jobs.build.cargo.env.NIGTHLY }}-${{  jobs.build.cargo.env.TARGET }}-${{ hashFiles('**/Cargo.lock') }}      
+          path: $CARGO_HOME
+          key: $NIGTHLY-$TARGET-${{ hashFiles('**/Cargo.lock') }}      
       - run: cargo fetch
