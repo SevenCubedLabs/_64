@@ -6,9 +6,9 @@ jobs:
     container: zeno343/underscore_build:latest
     steps:
       - run: |
-             echo "CARGO_HOME=$CARGO_HOME >> $GITHUB_ENV"
-             echo "TARGET=$TARGET >> $GITHUB_ENV"
-             echo "NIGHTLY=$NIGHTLY >> $GITHUB_ENV"
+             echo "CARGO_HOME=$CARGO_HOME" >> $GITHUB_ENV
+             echo "TARGET=$TARGET" >> $GITHUB_ENV
+             echo "NIGHTLY=$NIGHTLY" >> $GITHUB_ENV
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
         name: Cache Crates
