@@ -7,8 +7,12 @@ authors = ["Zeno <zeno@sevencubed.tech>"]
 edition = "2018"
 
 [workspace]
+
 [dependencies]
-underscore_sys = { path = "./_sys", version = "0.1.0"}
+_sys = { version = "0.1.0", package = "underscore_sys" }
+
+[patch.crates-io]
+_sys = { package = "underscore_sys", path = "_sys" }
 
 [features]
 minsize = []
