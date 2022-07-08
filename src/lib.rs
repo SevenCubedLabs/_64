@@ -1,7 +1,6 @@
 #![no_std]
 #![feature(core_intrinsics)]
 
-extern crate underscore_sys as _sys;
 pub mod event;
 pub mod render;
 pub mod window;
