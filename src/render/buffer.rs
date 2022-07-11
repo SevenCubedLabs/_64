@@ -7,30 +7,29 @@ pub struct Buffer {
 }
 
 impl Buffer {
-    pub fn new(_type: GLenum) -> Self {
+    pub fn new<Data>(_type: GLenum, data: &[Data]) -> Self {
         unsafe {
             let mut buf = 0;
             glGenBuffers(1, &mut buf);
-            Self { _type, buf, len: 0 }
+            glBindBuffer(_type, buf);
+
+            glBufferData(
+                _type,
+                (core::mem::size_of::<Data>() * data.len()) as _,
+                data.as_ptr() as _,
+                GL_STATIC_DRAW,
+            );
+
+            Self {
+                _type,
+                buf,
+                len: data.len(),
+            }
         }
     }
 
     pub fn bind(&self) {
         unsafe { glBindBuffer(self._type, self.buf) }
-    }
-
-    pub fn copy<Data>(&mut self, data: &[Data]) {
-        self.bind();
-        self.len = data.len();
-
-        unsafe {
-            glBufferData(
-                self._type,
-                (core::mem::size_of::<Data>() * data.len()) as _,
-                data.as_ptr() as _,
-                GL_STATIC_DRAW,
-            )
-        }
     }
 
     pub fn len(&self) -> usize {
