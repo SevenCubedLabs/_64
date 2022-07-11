@@ -2,6 +2,7 @@
 #![feature(core_intrinsics)]
 
 pub mod event;
+pub mod math;
 pub mod render;
 pub mod window;
 
