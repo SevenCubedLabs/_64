@@ -1,18 +1,19 @@
 [package]
 name = "underscore_64"
-description = "A minsize focused multimedia library"
-version = "0.1.1"
+description = "A minsize graphics library"
+version = "0.2.0"
 license = "MIT"
 authors = ["Zeno <zeno@sevencubed.tech>"]
 edition = "2018"
 
 [workspace]
+members = ["underscore_sys"]
 
 [dependencies]
-_sys = { version = "0.1.0", package = "underscore_sys" }
+_sys = { package = "underscore_sys", version = "0.1.0" }
 
 [patch.crates-io]
-_sys = { package = "underscore_sys", path = "_sys" }
+_sys = { package = "underscore_sys", path = "underscore_sys" }
 
 [features]
 minsize = []
