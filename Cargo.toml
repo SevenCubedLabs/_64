@@ -10,7 +10,7 @@ edition = "2018"
 members = ["underscore_sys"]
 
 [dependencies]
-_sys = { package = "underscore_sys", version = "0.1.0" }
+_sys = { package = "underscore_sys", version = "^0.1.1" }
 
 [patch.crates-io]
 _sys = { package = "underscore_sys", path = "underscore_sys" }

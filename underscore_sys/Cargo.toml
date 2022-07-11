@@ -1,7 +1,7 @@
 [package]
 name = "underscore_sys"
 description = "openGL and SDL2 bindings for _64"
-version = "0.1.0"
+version = "0.1.1"
 license = "MIT"
 edition = "2021"
 
