@@ -26,17 +26,19 @@ pub unsafe extern "C" fn _start() {
     asm!("mov rdi, rsp", "call main", options(noreturn))
 }
 
-extern crate underscore_64 as _64;
-
 const NAME: &str = "_64\0";
-const POS: &str = concat!(include_str!("shaders/pos.vert"), "\0");
-const WHITE: &str = concat!(include_str!("shaders/white.frag"), "\0");
+const POS: &str = concat!(include_str!("../../src/shaders/pos.vert"), "\0");
+const WHITE: &str = concat!(include_str!("../../src/shaders/white.frag"), "\0");
 
 #[cfg_attr(feature = "minsize", no_mangle)]
 pub fn main() {
-    use _64::{
+    use underscore_64::{
         event::{Event, EventFeed},
-        render::{clear, mesh::Mesh, program::Program},
+        render::{
+            clear,
+            mesh::{Mesh, Topology},
+            program::Program,
+        },
         window::Window,
     };
 
@@ -46,10 +48,10 @@ pub fn main() {
     let program = Program::new(POS, WHITE);
     program.bind();
 
-    let mesh = Mesh::builder()
-        .with_verts(&[[0.0, 1.0, 0.0], [1.0, -1.0, 0.0], [-1.0, -1.0, 0.0]])
-        .with_indices(&[0, 1, 2])
-        .build();
+    let mesh = Mesh::new(
+        &[[0.0, 1.0, 0.0], [1.0, -1.0, 0.0], [-1.0, -1.0, 0.0]],
+        Topology::idx_triangles(&[0, 1, 2]),
+    );
 
     let mut events = EventFeed;
     loop {
@@ -72,5 +74,5 @@ pub fn main() {
     }
 
     #[cfg(feature = "minsize")]
-    _64::exit(0);
+    underscore_64::exit(0);
 }
