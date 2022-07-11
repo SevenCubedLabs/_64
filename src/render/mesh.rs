@@ -1,71 +1,65 @@
 use super::{buffer::Buffer, vertex::Vertex};
-use crate::data::List;
 use _sys::*;
+
+pub enum Topology {
+    Curve,
+    IdxTriangles(Buffer),
+}
+
+impl Topology {
+    pub fn idx_triangles(idx: &[u8]) -> Self {
+        Self::IdxTriangles(Buffer::new(GL_ELEMENT_ARRAY_BUFFER, idx))
+    }
+}
 
 pub struct Mesh {
     vao: GLuint,
-    _vertices: List<Buffer>,
-    indices: Buffer,
+    vertices: Buffer,
+    topology: Topology,
 }
 
 impl Mesh {
-    pub fn builder() -> MeshBuilder {
-        MeshBuilder {
-            vao: unsafe {
-                let mut vao = 0;
-                glGenVertexArrays(1, &mut vao);
-                glBindVertexArray(vao);
-                vao
-            },
-            vertices: List::new(),
-            indices: None,
+    pub fn new<V: Vertex>(verts: &[V], topology: Topology) -> Self {
+        let mut vao = 0;
+        unsafe {
+            glGenVertexArrays(1, &mut vao);
+            glBindVertexArray(vao);
+        }
+
+        match &topology {
+            Topology::IdxTriangles(indices) => {
+                indices.bind();
+            }
+            _ => {}
+        }
+
+        let vertices = Buffer::new(GL_ARRAY_BUFFER, verts);
+        V::enable(0);
+
+        Self {
+            vao,
+            vertices,
+            topology,
         }
     }
 
     pub fn draw(&self) {
         unsafe {
             glBindVertexArray(self.vao);
-            glDrawElements(
-                GL_TRIANGLES,
-                self.indices.len() as _,
-                GL_UNSIGNED_BYTE,
-                core::ptr::null(),
-            );
-        }
-    }
-}
+            match &self.topology {
+                Topology::IdxTriangles(indices) => {
+                    glDrawElements(
+                        GL_TRIANGLES,
+                        indices.len() as _,
+                        GL_UNSIGNED_BYTE,
+                        core::ptr::null(),
+                    );
+                }
 
-pub struct MeshBuilder {
-    vao: GLuint,
-    vertices: List<Buffer>,
-    indices: Option<Buffer>,
-}
-
-impl MeshBuilder {
-    pub fn with_verts<V: Vertex>(mut self, verts: &[V]) -> Self {
-        self.vertices.push({
-            let mut buf = Buffer::new(GL_ARRAY_BUFFER);
-            buf.copy(verts);
-            V::enable(self.vertices.len() as _);
-            buf
-        });
-        self
-    }
-
-    pub fn with_indices(mut self, ids: &[u8]) -> Self {
-        self.indices = Some({
-            let mut buf = Buffer::new(GL_ELEMENT_ARRAY_BUFFER);
-            buf.copy(ids);
-            buf
-        });
-        self
-    }
-
-    pub fn build(self) -> Mesh {
-        Mesh {
-            vao: self.vao,
-            _vertices: self.vertices,
-            indices: self.indices.unwrap(),
+                Topology::Curve => {
+                    glDrawArrays(GL_LINE_STRIP, 0, self.vertices.len() as _);
+                }
+            }
         }
     }
 }

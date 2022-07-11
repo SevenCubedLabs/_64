@@ -1,7 +1,8 @@
-#![no_std]
+#![cfg_attr(feature = "minsize", no_std)]
 #![feature(core_intrinsics)]
 
 pub mod event;
+pub mod math;
 pub mod render;
 pub mod window;
 
