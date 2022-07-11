@@ -9,7 +9,7 @@ pub trait Curve<Domain, Image: Vector> {
     fn plot(&self, start: Domain, end: Domain, n: usize) -> List<Image>;
 }
 
-fn sin(x: f32) -> f32 {
+pub fn sin(x: f32) -> f32 {
     unsafe { sinf32(x) }
 }
 
@@ -23,7 +23,7 @@ where
 
         for point in (0..n).map(|x| {
             let x = x as f32;
-            [x, self(end + (x * dx))]
+            [start + x * dx, self(start + (x * dx))]
         }) {
             curve.push(point);
         }
@@ -43,6 +43,6 @@ fn plot_sin() {
     let dx = (end - start) / n as f32;
     for n in 0..4 {
         let x = n as f32;
-        assert_eq!(sin_curve[n], [x, sin(end + x * dx)]);
+        assert_eq!(sin_curve[n], [start + x * dx, sin(start + x * dx)]);
     }
 }

@@ -15,7 +15,7 @@ impl Topology {
 
 pub struct Mesh {
     vao: GLuint,
-    _vertices: Buffer,
+    vertices: Buffer,
     topology: Topology,
 }
 
@@ -34,12 +34,12 @@ impl Mesh {
             _ => {}
         }
 
-        let verts = Buffer::new(GL_ARRAY_BUFFER, verts);
+        let vertices = Buffer::new(GL_ARRAY_BUFFER, verts);
         V::enable(0);
 
         Self {
             vao,
-            _vertices: verts,
+            vertices,
             topology,
         }
     }
@@ -57,7 +57,9 @@ impl Mesh {
                     );
                 }
 
-                _ => {}
+                Topology::Curve => {
+                    glDrawArrays(GL_LINE_STRIP, 0, self.vertices.len() as _);
+                }
             }
         }
     }

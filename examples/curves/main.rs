@@ -34,6 +34,7 @@ const WHITE: &str = concat!(include_str!("../../src/shaders/white.frag"), "\0");
 pub fn main() {
     use underscore_64::{
         event::{Event, EventFeed},
+        math::{sin, Curve},
         render::{
             clear,
             mesh::{Mesh, Topology},
@@ -48,10 +49,10 @@ pub fn main() {
     let program = Program::new(POS, WHITE);
     program.bind();
 
-    let mesh = Mesh::new(
-        &[[0.0, 1.0, 0.0], [1.0, -1.0, 0.0], [-1.0, -1.0, 0.0]],
-        Topology::idx_triangles(&[0, 1, 2]),
-    );
+    let new_sin = |x: f32| sin(x * 6.28);
+    let sin_plot = new_sin.plot(-1.0, 1.0, 100);
+
+    let mesh = Mesh::new(&sin_plot, Topology::Curve);
 
     let mut events = EventFeed;
     loop {
@@ -74,5 +75,5 @@ pub fn main() {
     }
 
     #[cfg(feature = "minsize")]
-    underscore_64::exit(0);
+    _64::exit(0);
 }

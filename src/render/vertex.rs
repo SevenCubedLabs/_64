@@ -22,6 +22,10 @@ pub trait Vertex: Sized {
     }
 }
 
+impl Vertex for [f32; 2] {
+    const NUM: GLint = 2;
+}
+
 impl Vertex for [f32; 3] {
     const NUM: GLint = 3;
 }
