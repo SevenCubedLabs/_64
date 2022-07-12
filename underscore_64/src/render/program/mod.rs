@@ -1,5 +1,7 @@
-use super::shader::Shader;
-use _sys::*;
+use underscore_sys::*;
+
+mod shader;
+use shader::Shader;
 
 pub struct Program(GLuint);
 
