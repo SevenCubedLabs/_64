@@ -1,0 +1,10 @@
+[package]
+name = "underscore_64"
+description = "A minsize graphics library"
+version = "0.2.0"
+license = "MIT"
+authors = ["Zeno <zeno@sevencubed.tech>"]
+edition = "2018"
+
+[dependencies]
+underscore_sys = "^0.1.1"
