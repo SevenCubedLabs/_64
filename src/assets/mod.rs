@@ -5,6 +5,7 @@ pub mod shaders {
         };
     }
 
+    pub const POS2D: &str = shader_src!("shaders/pos2d.vert");
     pub const POS3D: &str = shader_src!("shaders/pos3d.vert");
     pub const POS3D_RGB: &str = shader_src!("shaders/pos3d_rgb.vert");
     pub const WHITE: &str = shader_src!("shaders/white.frag");
