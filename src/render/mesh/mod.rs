@@ -11,7 +11,7 @@ pub struct Mesh {
 }
 
 impl Mesh {
-    pub fn new<V: Vertex>(verts: &[V], topology: Topology) -> Self {
+    pub fn new<Verts: Vertex>(verts: &[Verts], topology: Topology) -> Self {
         let mut vao = 0;
         unsafe {
             glGenVertexArrays(1, &mut vao);
@@ -26,7 +26,7 @@ impl Mesh {
         }
 
         let vertices = Buffer::new(GL_ARRAY_BUFFER, verts);
-        V::enable(0);
+        Verts::bind();
 
         Self {
             vao,

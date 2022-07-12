@@ -2,30 +2,30 @@ use _sys::*;
 use core::mem::size_of;
 
 pub trait Vertex: Sized {
-    const NUM: GLint;
-    const SIZE: GLint = size_of::<Self>() as _;
+    const NUM: i32 = 0;
+    const SIZE: i32 = size_of::<Self>() as _;
     const TYPE: GLenum = GL_FLOAT;
-    const NORM: GLboolean = GL_FALSE as _;
+    const NORM: bool = false;
 
-    fn enable(idx: u32) {
+    fn bind() {
+        Self::bind_parameters(0, Self::NUM, Self::TYPE, Self::NORM, Self::SIZE);
+    }
+
+    fn bind_parameters(idx: u32, num: i32, _type: GLenum, norm: bool, stride: i32) {
         unsafe {
-            glEnableVertexAttribArray(idx);
-            glVertexAttribPointer(
-                idx,
-                Self::NUM,
-                Self::TYPE,
-                Self::NORM,
-                Self::SIZE,
-                core::ptr::null(),
-            );
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(idx, num, _type, norm as _, stride, core::ptr::null());
         }
     }
 }
 
-impl Vertex for [f32; 2] {
-    const NUM: GLint = 2;
+impl<V1: Vertex, V2: Vertex> Vertex for (V1, V2) {
+    fn bind() {
+        V1::bind_parameters(0, V1::NUM, V1::TYPE, V1::NORM, 0);
+        V2::bind_parameters(1, V2::NUM, V2::TYPE, V2::NORM, V1::SIZE);
+    }
 }
 
-impl Vertex for [f32; 3] {
-    const NUM: GLint = 3;
+impl<const N: usize> Vertex for [f32; N] {
+    const NUM: i32 = N as _;
 }
