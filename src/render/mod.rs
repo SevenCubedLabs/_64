@@ -1,7 +1,6 @@
 mod buffer;
 pub mod mesh;
 pub mod program;
-pub mod shader;
 use _sys::*;
 
 pub struct Context(SDL_GLContext);

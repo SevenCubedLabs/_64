@@ -1,6 +1,7 @@
 #![cfg_attr(feature = "minsize", no_std)]
 #![feature(core_intrinsics)]
 
+pub mod assets;
 pub mod event;
 pub mod math;
 pub mod render;
