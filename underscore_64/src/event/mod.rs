@@ -1,4 +1,4 @@
-use _sys::*;
+use underscore_sys::*;
 
 pub struct EventFeed;
 pub enum Event {

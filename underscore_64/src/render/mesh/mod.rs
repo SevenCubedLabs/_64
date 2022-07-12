@@ -1,5 +1,5 @@
 use super::buffer::Buffer;
-use _sys::*;
+use underscore_sys::*;
 
 mod vertex;
 use vertex::Vertex;

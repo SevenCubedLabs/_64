@@ -1,4 +1,4 @@
-use _sys::*;
+use underscore_sys::*;
 
 mod shader;
 use shader::Shader;
