@@ -98,6 +98,17 @@ impl<Item: Sized> Drop for List<Item> {
     }
 }
 
+use core::fmt::Debug;
+impl<Item: Debug> Debug for List<Item> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        for n in 0..self.len() {
+            write!(f, "{:?}\n", self[n])?;
+        }
+
+        Ok(())
+    }
+}
+
 #[test]
 fn new() {
     let list = List::<f32>::new(5);
