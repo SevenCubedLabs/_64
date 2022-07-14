@@ -6,6 +6,10 @@ license = "MIT"
 authors = ["Zeno <zeno@sevencubed.tech>"]
 edition = "2018"
 
+[[bin]]
+name = "_64"
+path = "src/main.rs"
+
 [workspace]
 members = ["underscore_64", "underscore_64/underscore_sys"]
 
@@ -13,8 +17,8 @@ members = ["underscore_64", "underscore_64/underscore_sys"]
 underscore_64 = "^0.2.0"
 
 [patch.crates-io]
-underscore_sys = { path = "underscore_64/underscore_sys" }
-underscore_64 = { path = "underscore_64" }
+underscore_sys = { path = "./underscore_64/underscore_sys" }
+underscore_64 = { path = "./underscore_64" }
 
 [features]
 minsize = []
