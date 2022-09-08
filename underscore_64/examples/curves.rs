@@ -27,12 +27,11 @@ pub unsafe extern "C" fn _start() {
 }
 
 const NAME: &str = "_64\0";
-const POS: &str = concat!(include_str!("../../src/shaders/pos.vert"), "\0");
-const WHITE: &str = concat!(include_str!("../../src/shaders/white.frag"), "\0");
 
 #[cfg_attr(feature = "minsize", no_mangle)]
 pub fn main() {
     use underscore_64::{
+        assets::shaders::{POS2D, WHITE},
         event::{Event, EventFeed},
         math::{sin, Curve},
         render::{
@@ -46,7 +45,7 @@ pub fn main() {
     let window = Window::new(NAME.as_ptr(), 1920, 1080).expect("test");
     let _context = window.context();
 
-    let program = Program::new(POS, WHITE);
+    let program = Program::new(POS2D, WHITE);
     program.bind();
 
     let new_sin = |x: f32| sin(x * 6.28);

@@ -19,11 +19,11 @@ where
 {
     fn plot(&self, start: f32, end: f32, n: usize) -> List<[f32; 2]> {
         let dx = (end - start) / n as f32;
-        let mut curve = List::new();
+        let mut curve = List::new(n + 1);
 
-        for point in (0..n).map(|x| {
+        for point in (0..=n).map(|x| {
             let x = x as f32;
-            [start + x * dx, self(start + (x * dx))]
+            [start + (x * dx), self(start + (x * dx))]
         }) {
             curve.push(point);
         }
@@ -33,16 +33,16 @@ where
 
 #[test]
 fn plot_sin() {
-    let start = 0.0;
-    let end = 6.28;
+    let start = -1.0;
+    let end = 1.0;
     let n = 4;
-    let sin_curve = sin.plot(0.0, 6.28, 4);
+    let sin_curve = sin.plot(start, end, n);
 
-    assert_eq!(sin_curve.len(), 4);
+    assert_eq!(sin_curve.len(), 5);
 
     let dx = (end - start) / n as f32;
-    for n in 0..4 {
+    for n in 0..=4 {
         let x = n as f32;
-        assert_eq!(sin_curve[n], [start + x * dx, sin(start + x * dx)]);
+        assert_eq!(sin_curve[n], [start + (x * dx), sin(start + (x * dx))]);
     }
 }

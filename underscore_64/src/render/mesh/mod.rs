@@ -1,16 +1,8 @@
-use super::{buffer::Buffer, vertex::Vertex};
-use _sys::*;
+use super::buffer::Buffer;
+use underscore_sys::*;
 
-pub enum Topology {
-    Curve,
-    IdxTriangles(Buffer),
-}
-
-impl Topology {
-    pub fn idx_triangles(idx: &[u8]) -> Self {
-        Self::IdxTriangles(Buffer::new(GL_ELEMENT_ARRAY_BUFFER, idx))
-    }
-}
+mod vertex;
+use vertex::Vertex;
 
 pub struct Mesh {
     vao: GLuint,
@@ -19,7 +11,7 @@ pub struct Mesh {
 }
 
 impl Mesh {
-    pub fn new<V: Vertex>(verts: &[V], topology: Topology) -> Self {
+    pub fn new<Verts: Vertex>(verts: &[Verts], topology: Topology) -> Self {
         let mut vao = 0;
         unsafe {
             glGenVertexArrays(1, &mut vao);
@@ -34,7 +26,7 @@ impl Mesh {
         }
 
         let vertices = Buffer::new(GL_ARRAY_BUFFER, verts);
-        V::enable(0);
+        Verts::bind();
 
         Self {
             vao,
@@ -61,5 +53,16 @@ impl Mesh {
                 }
             }
         }
+    }
+}
+
+pub enum Topology {
+    Curve,
+    IdxTriangles(Buffer),
+}
+
+impl Topology {
+    pub fn idx_triangles(idx: &[u8]) -> Self {
+        Self::IdxTriangles(Buffer::new(GL_ELEMENT_ARRAY_BUFFER, idx))
     }
 }
