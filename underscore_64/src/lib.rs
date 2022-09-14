@@ -1,9 +1,13 @@
 #![no_std]
 #![feature(core_intrinsics)]
 
-pub mod assets;
-mod data;
+pub mod data;
 pub mod event;
 pub mod math;
 pub mod render;
-pub mod window;
+
+pub fn exit(code: i32) {
+    unsafe {
+        underscore_sys::exit(code);
+    }
+}

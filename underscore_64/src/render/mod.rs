@@ -1,6 +1,11 @@
 mod buffer;
+pub mod framebuffer;
 pub mod mesh;
 pub mod program;
+pub mod shaders;
+pub mod target;
+pub mod texture;
+pub mod window;
 use underscore_sys::*;
 
 pub struct Context(SDL_GLContext);

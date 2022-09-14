@@ -1,6 +1,7 @@
 use core::mem::size_of;
 use underscore_sys::*;
 
+#[derive(Clone)]
 pub struct List<Item: Sized> {
     data: *mut Item,
     len: usize,
@@ -24,9 +25,19 @@ impl<Item: Sized> List<Item> {
         }
 
         unsafe {
-            *self.data.add(self.len) = item;
+            self.data.add(self.len).write(item);
         }
         self.len += 1;
+    }
+
+    pub fn tail(&self) -> &Item {
+        let idx = self.len - 1;
+        &self[idx]
+    }
+
+    pub fn tail_mut(&mut self) -> &mut Item {
+        let idx = self.len - 1;
+        &mut self[idx]
     }
 
     pub fn len(&self) -> usize {
@@ -43,7 +54,7 @@ impl<Item: Sized> List<Item> {
             memcpy(
                 new_data as _,
                 self.data as _,
-                (self.len * size_of::<Item>()) as _,
+                (self.len * Self::ITEM_SIZE) as _,
             );
             new_data
         };
@@ -52,7 +63,37 @@ impl<Item: Sized> List<Item> {
     }
 }
 
-impl<Item: Sized> From<&[Item]> for List<Item> {
+impl<Item> core::ops::AddAssign for List<Item> {
+    fn add_assign(&mut self, rhs: List<Item>) {
+        if self.len + rhs.len >= self.capacity {
+            self.resize(self.len + rhs.len);
+        }
+
+        unsafe {
+            self.data.add(self.len).copy_from(rhs.data, rhs.len);
+        }
+        self.len += rhs.len;
+    }
+}
+
+impl<Item> core::ops::Add for List<Item> {
+    type Output = Self;
+
+    fn add(mut self, rhs: List<Item>) -> Self::Output {
+        if self.len + rhs.len >= self.capacity {
+            self.resize(self.len + rhs.len);
+        }
+
+        unsafe {
+            self.data.add(self.len).copy_from(rhs.data, rhs.len);
+        }
+        self.len += rhs.len;
+
+        self
+    }
+}
+
+impl<Item> From<&[Item]> for List<Item> {
     fn from(items: &[Item]) -> Self {
         let mut list = List::new(items.len());
         unsafe {
@@ -68,7 +109,7 @@ impl<Item: Sized> From<&[Item]> for List<Item> {
     }
 }
 
-impl<Item: Sized> core::ops::Deref for List<Item> {
+impl<Item> core::ops::Deref for List<Item> {
     type Target = [Item];
 
     fn deref(&self) -> &Self::Target {
@@ -76,7 +117,7 @@ impl<Item: Sized> core::ops::Deref for List<Item> {
     }
 }
 
-impl<Item: Sized> core::ops::Index<usize> for List<Item> {
+impl<Item> core::ops::Index<usize> for List<Item> {
     type Output = Item;
 
     fn index(&self, idx: usize) -> &Self::Output {
@@ -84,13 +125,24 @@ impl<Item: Sized> core::ops::Index<usize> for List<Item> {
     }
 }
 
-impl<Item: Sized> core::ops::IndexMut<usize> for List<Item> {
+impl<Item> core::ops::IndexMut<usize> for List<Item> {
     fn index_mut(&mut self, idx: usize) -> &mut Self::Output {
         unsafe { &mut *self.data.add(idx) }
     }
 }
 
-impl<Item: Sized> Drop for List<Item> {
+impl<Item> core::iter::FromIterator<Item> for List<Item> {
+    fn from_iter<I: IntoIterator<Item = Item>>(iter: I) -> Self {
+        let mut list = Self::new(1);
+        for x in iter {
+            list.push(x);
+        }
+
+        list
+    }
+}
+
+impl<Item> Drop for List<Item> {
     fn drop(&mut self) {
         unsafe {
             free(self.data as _);
@@ -135,7 +187,7 @@ fn resize() {
 
 #[test]
 fn push() {
-    let mut list = List::new(1000);
+    let mut list = List::new(1);
 
     for x in 0..1000 {
         list.push(x);
@@ -145,6 +197,15 @@ fn push() {
 
     assert_eq!(list[0], 0);
     assert_eq!(list[999], 999);
+}
+
+#[test]
+fn list_of_list() {
+    let mut outer: List<List<[f32; 2]>> = List::new(1);
+    outer.push(List::new(1));
+
+    assert_eq!(outer.len(), 1);
+    assert_eq!(outer[0].len(), 0);
 }
 
 #[test]

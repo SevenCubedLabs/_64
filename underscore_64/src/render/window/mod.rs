@@ -1,10 +1,14 @@
-use crate::render::Context;
+use crate::render::{target::RenderTarget, Context};
 use underscore_sys::*;
 
-pub struct Window(*mut SDL_Window);
+pub struct Window {
+    window: *mut SDL_Window,
+    w: i32,
+    h: i32,
+}
 
 impl Window {
-    pub fn new(name: *const u8, width: u32, height: u32) -> Result<Self, ()> {
+    pub fn new(name: *const u8, w: i32, h: i32) -> Result<Self, ()> {
         unsafe {
             SDL_InitSubSystem(SDL_INIT_VIDEO);
 
@@ -12,13 +16,13 @@ impl Window {
                 name as _,
                 SDL_WINDOWPOS_UNDEFINED_MASK as _,
                 SDL_WINDOWPOS_UNDEFINED_MASK as _,
-                width as _,
-                height as _,
+                w,
+                h,
                 SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN,
             );
 
             if !window.is_null() {
-                Ok(Self(window))
+                Ok(Self { window, w, h })
             } else {
                 SDL_QuitSubSystem(SDL_INIT_VIDEO);
                 Err(())
@@ -31,14 +35,24 @@ impl Window {
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
 
-            Context::new(self.0)
+            Context::new(self.window)
         }
     }
 
     pub fn swap(&self) {
         unsafe {
-            SDL_GL_SwapWindow(self.0);
+            SDL_GL_SwapWindow(self.window);
         }
+    }
+}
+
+impl RenderTarget for Window {
+    fn draw<T, F: Fn() -> T>(&self, f: F) -> T {
+        unsafe {
+            glViewport(0, 0, self.w, self.h);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
+        f()
     }
 }
 

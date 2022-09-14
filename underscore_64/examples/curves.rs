@@ -1,47 +1,18 @@
-#![cfg_attr(
-    feature = "minsize",
-    no_std,
-    no_main,
-    feature(lang_items),
-    feature(naked_functions),
-    feature(default_alloc_error_handler)
-)]
+use underscore_64::{
+    assets::shaders::{POS2D, WHITE},
+    event::{Event, EventFeed},
+    math::{sin, Curve},
+    render::{
+        clear,
+        mesh::{Mesh, Topology},
+        program::Program,
+    },
+    window::Window,
+};
 
-#[cfg(feature = "minsize")]
-#[lang = "eh_personality"]
-fn eh_personality() {}
+const NAME: &str = "_64-curves\0";
 
-#[cfg(feature = "minsize")]
-#[panic_handler]
-fn panic(_info: &core::panic::PanicInfo) -> ! {
-    loop {}
-}
-
-#[cfg(feature = "minsize")]
-#[no_mangle]
-#[naked]
-pub unsafe extern "C" fn _start() {
-    use core::arch::asm;
-
-    asm!("mov rdi, rsp", "call main", options(noreturn))
-}
-
-const NAME: &str = "_64\0";
-
-#[cfg_attr(feature = "minsize", no_mangle)]
 pub fn main() {
-    use underscore_64::{
-        assets::shaders::{POS2D, WHITE},
-        event::{Event, EventFeed},
-        math::{sin, Curve},
-        render::{
-            clear,
-            mesh::{Mesh, Topology},
-            program::Program,
-        },
-        window::Window,
-    };
-
     let window = Window::new(NAME.as_ptr(), 1920, 1080).expect("test");
     let _context = window.context();
 
@@ -51,7 +22,7 @@ pub fn main() {
     let new_sin = |x: f32| sin(x * 6.28);
     let sin_plot = new_sin.plot(-1.0, 1.0, 100);
 
-    let mesh = Mesh::new(&sin_plot, Topology::Curve);
+    let mesh = Mesh::new(&sin_plot, Topology::Points);
 
     let mut events = EventFeed;
     loop {
@@ -72,7 +43,4 @@ pub fn main() {
             }
         }
     }
-
-    #[cfg(feature = "minsize")]
-    _64::exit(0);
 }
