@@ -56,3 +56,11 @@ impl core::ops::Deref for Texture {
         &self.id
     }
 }
+
+impl Drop for Texture {
+    fn drop(&mut self) {
+        unsafe {
+            glDeleteTextures(1, &self.id);
+        }
+    }
+}
