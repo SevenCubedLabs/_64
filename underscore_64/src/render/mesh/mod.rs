@@ -70,10 +70,11 @@ impl Mesh {
     pub fn stencil(&self) {
         unsafe {
             glEnable(GL_STENCIL_TEST);
-            glStencilFunc(GL_ALWAYS, 1, 0xFF);
-            glClear(GL_STENCIL_BUFFER_BIT);
-            glColorMask(0, 0, 0, 0);
             glStencilMask(0xFF);
+            glColorMask(0, 0, 0, 0);
+            glStencilFunc(GL_ALWAYS, 1, 0xFF);
+            glClearStencil(0);
+            glClear(GL_STENCIL_BUFFER_BIT);
             glStencilOp(GL_INVERT, GL_INVERT, GL_INVERT);
 
             self.draw();
