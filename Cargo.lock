@@ -6,8 +6,8 @@ version = 3
 name = "_64"
 version = "0.1.0"
 dependencies = [
- "ttf-parser",
  "underscore_64",
+ "underscore_txt",
 ]
 
 [[package]]
@@ -328,6 +328,14 @@ name = "underscore_sys"
 version = "0.1.1"
 dependencies = [
  "bindgen",
+]
+
+[[package]]
+name = "underscore_txt"
+version = "0.1.0"
+dependencies = [
+ "ttf-parser",
+ "underscore_64",
 ]
 
 [[package]]
