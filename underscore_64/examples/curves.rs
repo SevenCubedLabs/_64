@@ -1,13 +1,13 @@
 use underscore_64::{
-    assets::shaders::{POS2D, WHITE},
     event::{Event, EventFeed},
     math::{sin, Curve},
     render::{
         clear,
         mesh::{Mesh, Topology},
         program::Program,
+        shaders::{POS2D, WHITE},
+        window::Window,
     },
-    window::Window,
 };
 
 const NAME: &str = "_64-curves\0";

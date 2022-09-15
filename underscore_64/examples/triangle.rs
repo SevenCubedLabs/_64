@@ -1,12 +1,12 @@
 use underscore_64::{
-    assets::shaders::{POS2D_RGB, RGB},
     event::{Event, EventFeed},
     render::{
         clear,
         mesh::{Mesh, Topology},
         program::Program,
+        shaders::{POS2D_RGB, RGB},
+        window::Window,
     },
-    window::Window,
 };
 
 const NAME: &str = "_64-triangle\0";

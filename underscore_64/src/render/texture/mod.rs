@@ -1,7 +1,7 @@
 use underscore_sys::*;
 
 #[repr(u32)]
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum Target {
     Tex2d = GL_TEXTURE_2D,
 }
@@ -13,6 +13,7 @@ pub enum Format {
     Stencil = GL_STENCIL_INDEX,
 }
 
+#[derive(Debug)]
 pub struct Texture {
     id: GLuint,
     target: Target,

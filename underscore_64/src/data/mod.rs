@@ -1,7 +1,7 @@
 use core::mem::size_of;
 use underscore_sys::*;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct List<Item: Sized> {
     data: *mut Item,
     len: usize,
@@ -20,7 +20,7 @@ impl<Item: Sized> List<Item> {
     }
 
     pub fn push(&mut self, item: Item) {
-        if self.len + 1 >= self.capacity {
+        if self.len >= self.capacity {
             self.resize(2 * self.capacity);
         }
 

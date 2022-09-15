@@ -45,10 +45,14 @@ use underscore_64::{
 
 use ttf_parser::{OutlineBuilder, Rect};
 
+#[derive(Debug)]
 struct Glyph {
     tex: Texture,
     w: i32,
     h: i32,
+    x_min: i16,
+    y_min: i16,
+    h_advance: u16,
 }
 
 impl Glyph {
@@ -57,7 +61,9 @@ impl Glyph {
     }
 }
 
+#[derive(Debug)]
 struct GlyphMap {
+    y_origin: i16,
     glyphs: List<Option<Glyph>>,
 }
 
@@ -70,12 +76,17 @@ impl GlyphMap {
             .bytes()
             .collect::<Result<Vec<u8>, std::io::Error>>()
             .map_err(|e| format!("file read err:  {}", e))?;
+        let y_origin = -GlyphBuilder::new(&file)?
+            .descender()
+            .ok_or(format!("no descender found"))?;
 
         for ch in 0..128 {
-            glyphs.push(GlyphBuilder::new(&file)?.glyph(ch as u8 as char));
+            let glyph = GlyphBuilder::new(&file)?.glyph(ch as u8 as char);
+            println!("{:?}", glyph);
+            glyphs.push(glyph);
         }
 
-        Ok(Self { glyphs })
+        Ok(Self { y_origin, glyphs })
     }
 
     fn get(&self, idx: char) -> Option<&Glyph> {
@@ -96,6 +107,10 @@ impl<'a> GlyphBuilder<'a> {
             splines: List::new(1),
             head: [0.0; 2],
         })
+    }
+
+    fn descender(&self) -> Option<i16> {
+        Some(ttf_parser::Face::from_slice(self.file, 0).ok()?.descender())
     }
 
     fn glyph(&'a mut self, ch: char) -> Option<Glyph> {
@@ -119,6 +134,8 @@ impl<'a> GlyphBuilder<'a> {
 
             let w = (x_max - x_min) as i32;
             let h = (y_max - y_min) as i32;
+            println!("width: {}", w);
+            println!("height: {}", h);
 
             // Build meshes
             let verts = self.splines.iter().fold(
@@ -126,10 +143,11 @@ impl<'a> GlyphBuilder<'a> {
                 |mut points, spline| {
                     points.push([0.0, 0.0]);
                     spline.points().iter().fold(points, |mut points, point| {
-                        points.push([
+                        let point = [
                             (2.0 * (point[0] - x_min as f32) / w as f32) - 1.0,
                             (2.0 * (point[1] - y_min as f32) / h as f32) - 1.0,
-                        ]);
+                        ];
+                        points.push(point);
 
                         points
                     })
@@ -158,7 +176,14 @@ impl<'a> GlyphBuilder<'a> {
                 quad.draw();
             });
 
-            Glyph { tex, w, h }
+            Glyph {
+                tex,
+                w,
+                h,
+                y_min,
+                x_min,
+                h_advance: face.glyph_hor_advance(idx).unwrap(),
+            }
         })
     }
 }
@@ -201,6 +226,7 @@ pub fn main() {
     let glyphs =
         GlyphMap::new("assets/ttf/Hack-Regular.ttf").expect("Hack-Regular.ttf parse failed");
     println!("Hack-Regular.ttf rendered to glyph map");
+    println!("{:?}", glyphs);
 
     let tex_quad = Mesh::new(
         &[
