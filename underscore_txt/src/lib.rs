@@ -1,3 +1,4 @@
+#![no_std]
 use ttf_parser::{OutlineBuilder, Rect};
 use underscore_64::{
     data::List,
@@ -36,25 +37,16 @@ pub struct GlyphMap {
 }
 
 impl GlyphMap {
-    pub fn new(file: &str) -> Result<Self, String> {
-        use std::io::Read;
+    pub fn new(file: &[u8]) -> Option<Self> {
         let mut glyphs = List::new(128);
-        let file = std::fs::File::open(file)
-            .map_err(|e| format!("file err: {}", e))?
-            .bytes()
-            .collect::<Result<Vec<u8>, std::io::Error>>()
-            .map_err(|e| format!("file read err:  {}", e))?;
-        let y_origin = -GlyphBuilder::new(&file)?
-            .descender()
-            .ok_or(format!("no descender found"))?;
+        let y_origin = -GlyphBuilder::new(&file).descender()?;
 
         for ch in 0..128 {
-            let glyph = GlyphBuilder::new(&file)?.glyph(ch as u8 as char);
-            println!("{:?}", glyph);
+            let glyph = GlyphBuilder::new(&file).glyph(ch as u8 as char);
             glyphs.push(glyph);
         }
 
-        Ok(Self { y_origin, glyphs })
+        Some(Self { y_origin, glyphs })
     }
 
     pub fn get(&self, idx: char) -> Option<&Glyph> {
@@ -70,13 +62,13 @@ struct GlyphBuilder<'a> {
 }
 
 impl<'a> GlyphBuilder<'a> {
-    fn new(file: &'a [u8]) -> Result<Self, String> {
-        Ok(Self {
+    fn new(file: &'a [u8]) -> Self {
+        Self {
             file,
             splines: List::new(1),
             head: [0.0; 2],
             stencil: Program::new(POS2D, WHITE),
-        })
+        }
     }
 
     fn descender(&self) -> Option<i16> {
@@ -92,20 +84,12 @@ impl<'a> GlyphBuilder<'a> {
                 y_min,
                 y_max,
             } = match face.outline_glyph(idx, self) {
-                Some(rect) => {
-                    println!(
-                        "outlined glyph {}: {} {} {} {}",
-                        ch, rect.x_min, rect.x_max, rect.y_min, rect.y_max
-                    );
-                    rect
-                }
+                Some(rect) => rect,
                 None => face.global_bounding_box(),
             };
 
             let w = (x_max - x_min) as i32;
             let h = (y_max - y_min) as i32;
-            println!("width: {}", w);
-            println!("height: {}", h);
 
             // Build meshes
             let verts = self.splines.iter().fold(

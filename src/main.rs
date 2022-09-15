@@ -27,6 +27,7 @@ pub unsafe extern "C" fn _start() {
 
 const NAME: &str = "_64\0";
 
+use std::io::Read;
 use underscore_64::{
     data::List,
     event::{Event, EventFeed},
@@ -46,8 +47,13 @@ pub fn main() {
     let window = Window::new(NAME.as_ptr(), 1920, 1080).expect("window creation failed");
     let _context = window.context();
 
-    let glyphs =
-        GlyphMap::new("assets/ttf/Hack-Regular.ttf").expect("Hack-Regular.ttf parse failed");
+    let file = std::fs::File::open("assets/ttf/Hack-Regular.ttf")
+        .expect("couldn't open ./assets/ttf/Hack-Regular.ttf")
+        .bytes()
+        .collect::<Result<Vec<u8>, std::io::Error>>()
+        .expect("couldn't read ./assets/ttf/Hack-Regular.ttf");
+
+    let glyphs = GlyphMap::new(&file).expect("Hack-Regular.ttf parse failed");
     println!("Hack-Regular.ttf rendered to glyph map");
     println!("{:?}", glyphs);
 
