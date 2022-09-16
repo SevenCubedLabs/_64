@@ -1,13 +1,15 @@
+use core::mem::size_of;
 use underscore_sys::*;
 
 pub struct Buffer {
     _type: GLenum,
     buf: GLuint,
     len: usize,
+    usage: Usage,
 }
 
 impl Buffer {
-    pub fn new<Data>(_type: GLenum, data: &[Data]) -> Self {
+    pub fn new<Data>(_type: GLenum, usage: Usage, data: &[Data]) -> Self {
         unsafe {
             let mut buf = 0;
             glGenBuffers(1, &mut buf);
@@ -15,16 +17,29 @@ impl Buffer {
 
             glBufferData(
                 _type,
-                (core::mem::size_of::<Data>() * data.len()) as _,
+                (size_of::<Data>() * data.len()) as _,
                 data.as_ptr() as _,
-                GL_STATIC_DRAW,
+                usage as _,
             );
 
             Self {
                 _type,
                 buf,
                 len: data.len(),
+                usage,
             }
+        }
+    }
+
+    pub fn update<Data>(&self, data: &[Data]) {
+        self.bind();
+        unsafe {
+            glBufferSubData(
+                self._type,
+                0,
+                (size_of::<Data>() * data.len()) as _,
+                data.as_ptr() as _,
+            );
         }
     }
 
@@ -43,4 +58,11 @@ impl Drop for Buffer {
             glDeleteBuffers(1, [self.buf].as_ptr());
         }
     }
+}
+
+#[repr(u32)]
+#[derive(Clone, Copy)]
+pub enum Usage {
+    StaticDraw = GL_STATIC_DRAW,
+    StreamDraw = GL_STREAM_DRAW,
 }

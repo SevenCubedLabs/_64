@@ -32,15 +32,15 @@ use underscore_64::{
     data::List,
     event::{Event, EventFeed},
     render::{
-        clear,
-        mesh::{Mesh, Topology},
+        clear_color,
+        mesh::{Mesh, Topology, Usage},
         program::Program,
         shaders::{POS2D_TEX2D, TEX2D},
         target::RenderTarget,
         window::Window,
     },
 };
-use underscore_txt::GlyphMap;
+use underscore_txt::{glyph::GlyphMap, text::TextBox};
 
 #[cfg_attr(feature = "minsize", no_mangle)]
 pub fn main() {
@@ -54,8 +54,7 @@ pub fn main() {
         .expect("couldn't read ./assets/ttf/Hack-Regular.ttf");
 
     let glyphs = GlyphMap::new(&file).expect("Hack-Regular.ttf parse failed");
-    println!("Hack-Regular.ttf rendered to glyph map");
-    println!("{:?}", glyphs);
+    let text = TextBox::from(b"hello world!".as_slice()).draw(&glyphs, 1920);
 
     let tex_quad = Mesh::new(
         &[
@@ -64,6 +63,7 @@ pub fn main() {
             ([-1.0, -1.0], [0.0, 0.0]),
             ([1.0, -1.0], [1.0, 0.0]),
         ],
+        Usage::StaticDraw,
         Topology::TriStrip,
     );
 
@@ -89,13 +89,10 @@ pub fn main() {
             None => {}
         };
 
-        window.draw(|| {
+        window.draw(|_| {
             glyph_prog.bind();
-            clear([0.0, 0.0, 0.0, 1.0]);
-            glyphs
-                .get(ch[0] as char)
-                .expect(&format!("glyph for {} not found", ch[0] as char))
-                .bind();
+            clear_color([0.0, 0.0, 0.0, 1.0]);
+            text.bind();
             tex_quad.draw();
         });
         window.swap();

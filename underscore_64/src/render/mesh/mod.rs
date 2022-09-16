@@ -1,17 +1,21 @@
 use super::buffer::Buffer;
+pub use super::buffer::Usage;
 use underscore_sys::*;
+
+use core::marker::PhantomData;
 
 mod vertex;
 use vertex::Vertex;
 
-pub struct Mesh {
+pub struct Mesh<V: Vertex> {
     vao: GLuint,
     vertices: Buffer,
     topology: Topology,
+    _data: PhantomData<V>,
 }
 
-impl Mesh {
-    pub fn new<Verts: Vertex>(verts: &[Verts], topology: Topology) -> Self {
+impl<V: Vertex> Mesh<V> {
+    pub fn new(verts: &[V], usage: Usage, topology: Topology) -> Self {
         let mut vao = 0;
         unsafe {
             glGenVertexArrays(1, &mut vao);
@@ -25,14 +29,19 @@ impl Mesh {
             _ => {}
         }
 
-        let vertices = Buffer::new(GL_ARRAY_BUFFER, verts);
-        Verts::bind();
+        let vertices = Buffer::new(GL_ARRAY_BUFFER, usage, verts);
+        V::bind();
 
         Self {
             vao,
             vertices,
             topology,
+            _data: PhantomData,
         }
+    }
+
+    pub fn update(&self, verts: &[V]) {
+        self.vertices.update(verts);
     }
 
     pub fn draw(&self) {
@@ -96,7 +105,7 @@ pub enum Topology {
 }
 
 impl Topology {
-    pub fn from_indices(idx: &[u8]) -> Self {
-        Self::TriIndexed(Buffer::new(GL_ELEMENT_ARRAY_BUFFER, idx))
+    pub fn from_indices(idx: &[u8], usage: Usage) -> Self {
+        Self::TriIndexed(Buffer::new(GL_ELEMENT_ARRAY_BUFFER, usage, idx))
     }
 }
