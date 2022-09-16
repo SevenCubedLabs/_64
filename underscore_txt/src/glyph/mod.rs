@@ -16,10 +16,10 @@ use underscore_64::{
 #[derive(Debug)]
 pub struct Glyph {
     pub(crate) tex: Texture,
-    pub(crate) w: i32,
-    pub(crate) h: i32,
     pub(crate) x_min: i16,
+    pub(crate) x_max: i16,
     pub(crate) y_min: i16,
+    pub(crate) y_max: i16,
     pub(crate) h_advance: u16,
 }
 
@@ -125,10 +125,10 @@ impl<'a> GlyphBuilder<'a> {
 
             Glyph {
                 tex,
-                w,
-                h,
-                y_min,
                 x_min,
+                x_max,
+                y_min,
+                y_max,
                 h_advance: face.glyph_hor_advance(idx).unwrap(),
             }
         })

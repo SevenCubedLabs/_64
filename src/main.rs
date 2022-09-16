@@ -42,8 +42,31 @@ use underscore_64::{
 };
 use underscore_txt::{glyph::GlyphMap, text::TextBox};
 
+use log::{Level, LevelFilter, Metadata, Record};
+
+struct SimpleLogger;
+static LOGGER: SimpleLogger = SimpleLogger;
+
+impl log::Log for SimpleLogger {
+    fn enabled(&self, metadata: &Metadata) -> bool {
+        metadata.level() <= Level::Debug
+    }
+
+    fn log(&self, record: &Record) {
+        if self.enabled(record.metadata()) {
+            println!("[{:>5}] {}", record.level(), record.args());
+        }
+    }
+
+    fn flush(&self) {}
+}
+
 #[cfg_attr(feature = "minsize", no_mangle)]
 pub fn main() {
+    log::set_logger(&LOGGER)
+        .map(|()| log::set_max_level(LevelFilter::Debug))
+        .expect("failed to init logs");
+    log::info!("---BEGIN LOG---");
     let window = Window::new(NAME.as_ptr(), 1920, 1080).expect("window creation failed");
     let _context = window.context();
 

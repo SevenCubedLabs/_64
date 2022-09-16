@@ -31,7 +31,7 @@ impl Buffer {
         }
     }
 
-    pub fn update<Data>(&self, data: &[Data]) {
+    pub fn update<Data>(&mut self, data: &[Data]) {
         self.bind();
         unsafe {
             glBufferSubData(

@@ -6,6 +6,7 @@ version = 3
 name = "_64"
 version = "0.1.0"
 dependencies = [
+ "log",
  "underscore_64",
  "underscore_txt",
 ]
@@ -334,6 +335,7 @@ dependencies = [
 name = "underscore_txt"
 version = "0.1.0"
 dependencies = [
+ "log",
  "ttf-parser",
  "underscore_64",
 ]

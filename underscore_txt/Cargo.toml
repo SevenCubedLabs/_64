@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 ttf-parser = "^0.15"
 underscore_64 = "^0.2.0"
+log = "^0.4.0"

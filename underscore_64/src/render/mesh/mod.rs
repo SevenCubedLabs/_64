@@ -40,7 +40,7 @@ impl<V: Vertex> Mesh<V> {
         }
     }
 
-    pub fn update(&self, verts: &[V]) {
+    pub fn update(&mut self, verts: &[V]) {
         self.vertices.update(verts);
     }
 

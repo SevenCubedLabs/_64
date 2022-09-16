@@ -36,7 +36,7 @@ impl Framebuffer {
 }
 
 impl RenderTarget for Framebuffer {
-    fn draw<T, F: Fn(&Self) -> T>(&self, f: F) -> T {
+    fn draw<T, F: FnMut(&Self) -> T>(&self, mut f: F) -> T {
         self.bind();
         f(self)
     }

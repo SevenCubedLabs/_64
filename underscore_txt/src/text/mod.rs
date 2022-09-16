@@ -26,7 +26,11 @@ impl TextBox {
             let glyph = glyphs.get(ch).unwrap();
             (
                 w + glyph.h_advance as i32,
-                if glyph.h > h { glyph.h } else { h },
+                if (glyph.y_max - glyph.y_min) as i32 > h {
+                    (glyph.y_max - glyph.y_min) as i32
+                } else {
+                    h
+                },
             )
         })
     }
@@ -37,7 +41,8 @@ impl TextBox {
         let scale = w as f32 / raw_w as f32;
         let h = (raw_h as f32 * scale) as i32;
 
-        let tex_quad = Mesh::new(
+        log::debug!("computed texture size of {}x{}", w, h);
+        let mut tex_quad = Mesh::new(
             &[
                 ([-1.0, 1.0], [0.0, 1.0]),
                 ([1.0, 1.0], [1.0, 1.0]),
@@ -59,18 +64,24 @@ impl TextBox {
                 shader.bind();
                 let mut advance = -1.0;
                 for &ch in self.line.iter() {
-                    let Glyph { tex, h_advance, .. } = glyphs.get(ch).unwrap();
+                    let glyph = glyphs.get(ch).unwrap();
+                    log::debug!("glyph {}: {:?}", ch as char, glyph);
+                    let n_advance = advance + glyph.h_advance as f32 / raw_w as f32 * 2.0;
 
-                    let n_advance = advance + *h_advance as f32 / raw_w as f32 * 2.0;
+                    // Don't draw spaces, idk why their bounding box is so wonky
+                    if ch != ' ' as _ {
+                        let left = advance + glyph.x_min as f32 / raw_w as f32 * 2.0;
+                        let right = advance + glyph.x_max as f32 / raw_w as f32 * 2.0;
 
-                    tex.bind();
-                    tex_quad.update(&[
-                        ([advance, 1.0], [0.0, 1.0]),    // top left
-                        ([n_advance, 1.0], [1.0, 1.0]),  // top right
-                        ([advance, -1.0], [0.0, 0.0]),   // bottom left
-                        ([n_advance, -1.0], [1.0, 0.0]), // bottom right
-                    ]);
-                    tex_quad.draw();
+                        glyph.tex.bind();
+                        tex_quad.update(&[
+                            ([left, 1.0], [0.0, 1.0]),   // top left
+                            ([right, 1.0], [1.0, 1.0]),  // top right
+                            ([left, -1.0], [0.0, 0.0]),  // bottom left
+                            ([right, -1.0], [1.0, 0.0]), // bottom right
+                        ]);
+                        tex_quad.draw();
+                    }
 
                     advance = n_advance
                 }
