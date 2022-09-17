@@ -43,11 +43,11 @@ impl TextBox {
         let (w, h, y_origin) = self.dimensions(glyphs);
 
         let scale = line_width as f32 / w as f32;
-        let w = (w as f32 * scale) as i32;
-        let h = (h as f32 * scale) as i32;
-        let y_origin = (y_origin as f32 * scale) as i32;
-
+        let w = (w as f32 * scale).ceil() as i32;
+        let h = (h as f32 * scale).ceil() as i32;
+        let y_origin = (y_origin as f32 * scale).ceil() as i32;
         log::debug!("computed texture size of {}x{}", w, h);
+
         let tex_quad = Mesh::new(
             &[
                 ([-1.0, 1.0], [0.0, 1.0]),
@@ -85,11 +85,10 @@ impl TextBox {
                         y_max - y_min,
                     );
 
-                    // Don't draw spaces, idk why their bounding box is so wonky
-                    if ch != ' ' as _ {
+                    if let Some(tex) = &glyph.tex {
                         buf.set_viewport(x_min, y_origin + y_min, x_max - x_min, y_max - y_min);
 
-                        glyph.tex.bind();
+                        tex.bind();
                         tex_quad.draw();
                     }
 

@@ -1,4 +1,4 @@
-use ttf_parser::{OutlineBuilder, Rect};
+use ttf_parser::{Face, OutlineBuilder, Rect};
 use underscore_64::{
     data::List,
     math::Spline,
@@ -14,18 +14,12 @@ use underscore_64::{
 
 #[derive(Debug)]
 pub struct Glyph {
-    pub(crate) tex: Texture,
+    pub(crate) tex: Option<Texture>,
     pub(crate) x_min: i16,
     pub(crate) x_max: i16,
     pub(crate) y_min: i16,
     pub(crate) y_max: i16,
     pub(crate) h_advance: u16,
-}
-
-impl Glyph {
-    pub fn bind(&self) {
-        self.tex.bind();
-    }
 }
 
 #[derive(Debug)]
@@ -37,8 +31,10 @@ impl GlyphMap {
     pub fn new(file: &[u8]) -> Option<Self> {
         let mut glyphs = List::new(128);
 
+        let face = Face::from_slice(file, 0).ok()?;
+        let builder = GlyphBuilder::new(face);
         for ch in 0..128 {
-            let glyph = GlyphBuilder::new(&file).glyph(ch as u8 as char);
+            let glyph = builder.glyph(ch as u8 as char);
             glyphs.push(glyph);
         }
 
@@ -50,42 +46,57 @@ impl GlyphMap {
     }
 }
 
-struct GlyphBuilder<'a> {
-    file: &'a [u8],
+struct SplineBuilder {
     splines: List<Spline>,
     head: [f32; 2],
+}
+
+impl SplineBuilder {
+    fn new() -> Self {
+        Self {
+            splines: List::new(1),
+            head: [0.0; 2],
+        }
+    }
+}
+
+struct GlyphBuilder<'a> {
+    face: Face<'a>,
     stencil: Program,
 }
 
 impl<'a> GlyphBuilder<'a> {
-    fn new(file: &'a [u8]) -> Self {
+    fn new(face: Face<'a>) -> Self {
         Self {
-            file,
-            splines: List::new(1),
-            head: [0.0; 2],
+            face,
             stencil: Program::new(POS2D, WHITE),
         }
     }
 
-    fn glyph(&'a mut self, ch: char) -> Option<Glyph> {
-        let face = ttf_parser::Face::from_slice(self.file, 0).ok()?;
-        face.glyph_index(ch).map(|idx| {
+    fn glyph(&self, ch: char) -> Option<Glyph> {
+        let mut outline = SplineBuilder::new();
+        self.face.glyph_index(ch).map(|idx| {
             let Rect {
                 x_min,
                 x_max,
                 y_min,
                 y_max,
-            } = match face.outline_glyph(idx, self) {
+            } = match self.face.outline_glyph(idx, &mut outline) {
                 Some(rect) => rect,
-                None => face.global_bounding_box(),
+                None => Rect {
+                    x_min: 0,
+                    x_max: 0,
+                    y_min: 0,
+                    y_max: 0,
+                },
             };
 
             let w = (x_max - x_min) as i32;
             let h = (y_max - y_min) as i32;
 
             // Build meshes
-            let verts = self.splines.iter().fold(
-                List::new(self.splines.len() * 100 + 1),
+            let verts = outline.splines.iter().fold(
+                List::new(outline.splines.len() * 100 + 1),
                 |mut points, spline| {
                     points.push([0.0, 0.0]);
                     spline.points().iter().fold(points, |mut points, point| {
@@ -123,18 +134,18 @@ impl<'a> GlyphBuilder<'a> {
             });
 
             Glyph {
-                tex,
+                tex: Some(tex),
                 x_min,
                 x_max,
                 y_min,
                 y_max,
-                h_advance: face.glyph_hor_advance(idx).unwrap(),
+                h_advance: self.face.glyph_hor_advance(idx).unwrap(),
             }
         })
     }
 }
 
-impl<'a> OutlineBuilder for GlyphBuilder<'a> {
+impl OutlineBuilder for SplineBuilder {
     fn move_to(&mut self, x: f32, y: f32) {
         self.splines.push(Spline::new(1));
         self.head = [x, y];
