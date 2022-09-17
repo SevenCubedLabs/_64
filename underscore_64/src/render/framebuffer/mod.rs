@@ -27,10 +27,15 @@ impl Framebuffer {
         self
     }
 
-    pub fn bind(&self) {
+    fn bind(&self) {
         unsafe {
             glBindFramebuffer(GL_FRAMEBUFFER, self.fb);
-            glViewport(0, 0, self.w, self.h);
+        }
+    }
+
+    pub fn set_viewport(&self, x_min: i32, y_min: i32, x_max: i32, y_max: i32) {
+        unsafe {
+            glViewport(x_min, y_min, x_max, y_max);
         }
     }
 }
@@ -38,6 +43,7 @@ impl Framebuffer {
 impl RenderTarget for Framebuffer {
     fn draw<T, F: FnMut(&Self) -> T>(&self, mut f: F) -> T {
         self.bind();
+        self.set_viewport(0, 0, self.w, self.h);
         f(self)
     }
 }

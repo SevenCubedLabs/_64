@@ -1,8 +1,7 @@
-use crate::glyph::{Glyph, GlyphMap};
+use crate::glyph::GlyphMap;
 use underscore_64::{
     data::List,
     render::{
-        clear_color,
         framebuffer::{Attachment, Framebuffer},
         mesh::{Mesh, Topology, Usage},
         program::Program,
@@ -21,8 +20,8 @@ impl TextBox {
         Self { line: List::new(n) }
     }
 
-    pub fn dimensions(&self, glyphs: &GlyphMap) -> (i32, i32) {
-        self.line.iter().fold((0, 0), |(w, h), &ch| {
+    pub fn dimensions(&self, glyphs: &GlyphMap) -> (i32, i32, i32) {
+        self.line.iter().fold((0, 0, 0), |(w, h, y_origin), &ch| {
             let glyph = glyphs.get(ch).unwrap();
             (
                 w + glyph.h_advance as i32,
@@ -31,25 +30,32 @@ impl TextBox {
                 } else {
                     h
                 },
+                if -glyph.y_min as i32 > y_origin {
+                    -glyph.y_min as i32
+                } else {
+                    y_origin
+                },
             )
         })
     }
 
-    pub fn draw(&self, glyphs: &GlyphMap, w: i32) -> Texture {
-        let (raw_w, raw_h) = self.dimensions(glyphs);
+    pub fn draw(&self, glyphs: &GlyphMap, line_width: i32) -> Texture {
+        let (w, h, y_origin) = self.dimensions(glyphs);
 
-        let scale = w as f32 / raw_w as f32;
-        let h = (raw_h as f32 * scale) as i32;
+        let scale = line_width as f32 / w as f32;
+        let w = (w as f32 * scale) as i32;
+        let h = (h as f32 * scale) as i32;
+        let y_origin = (y_origin as f32 * scale) as i32;
 
         log::debug!("computed texture size of {}x{}", w, h);
-        let mut tex_quad = Mesh::new(
+        let tex_quad = Mesh::new(
             &[
                 ([-1.0, 1.0], [0.0, 1.0]),
                 ([1.0, 1.0], [1.0, 1.0]),
                 ([-1.0, -1.0], [0.0, 0.0]),
                 ([1.0, -1.0], [1.0, 0.0]),
             ],
-            Usage::StreamDraw,
+            Usage::StaticDraw,
             Topology::TriStrip,
         );
 
@@ -58,28 +64,32 @@ impl TextBox {
 
         Framebuffer::new(w, h)
             .with_texture(Attachment::Color0, &render)
-            .draw(|_| {
-                clear_color([0.0, 0.0, 0.0, 1.0]);
+            .draw(|buf| {
+                buf.clear_color([0.0, 0.0, 0.0, 1.0]);
 
                 shader.bind();
-                let mut advance = -1.0;
+                let mut advance = 0;
                 for &ch in self.line.iter() {
                     let glyph = glyphs.get(ch).unwrap();
-                    log::debug!("glyph {}: {:?}", ch as char, glyph);
-                    let n_advance = advance + glyph.h_advance as f32 / raw_w as f32 * 2.0;
+                    let n_advance = advance + (glyph.h_advance as f32 * scale) as i32;
+                    let x_min = advance + (glyph.x_min as f32 * scale) as i32;
+                    let y_min = (glyph.y_min as f32 * scale) as i32;
+                    let x_max = advance + (glyph.x_max as f32 * scale) as i32;
+                    let y_max = (glyph.y_max as f32 * scale) as i32;
+                    log::debug!(
+                        "drawing glyph {} with viewort {}, {}, {}, {}",
+                        ch as char,
+                        x_min,
+                        y_origin + y_min,
+                        x_max - x_min,
+                        y_max - y_min,
+                    );
 
                     // Don't draw spaces, idk why their bounding box is so wonky
                     if ch != ' ' as _ {
-                        let left = advance + glyph.x_min as f32 / raw_w as f32 * 2.0;
-                        let right = advance + glyph.x_max as f32 / raw_w as f32 * 2.0;
+                        buf.set_viewport(x_min, y_origin + y_min, x_max - x_min, y_max - y_min);
 
                         glyph.tex.bind();
-                        tex_quad.update(&[
-                            ([left, 1.0], [0.0, 1.0]),   // top left
-                            ([right, 1.0], [1.0, 1.0]),  // top right
-                            ([left, -1.0], [0.0, 0.0]),  // bottom left
-                            ([right, -1.0], [1.0, 0.0]), // bottom right
-                        ]);
                         tex_quad.draw();
                     }
 

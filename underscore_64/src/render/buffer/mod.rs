@@ -5,7 +5,6 @@ pub struct Buffer {
     _type: GLenum,
     buf: GLuint,
     len: usize,
-    usage: Usage,
 }
 
 impl Buffer {
@@ -26,7 +25,6 @@ impl Buffer {
                 _type,
                 buf,
                 len: data.len(),
-                usage,
             }
         }
     }

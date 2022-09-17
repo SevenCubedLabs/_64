@@ -3,7 +3,6 @@ use underscore_64::{
     data::List,
     math::Spline,
     render::{
-        clear_color,
         framebuffer::{Attachment, Framebuffer},
         mesh::{Mesh, Topology, Usage},
         program::Program,
@@ -116,9 +115,9 @@ impl<'a> GlyphBuilder<'a> {
                 .with_texture(Attachment::Color0, &tex)
                 .with_texture(Attachment::Stencil, &stencil);
 
-            fb.draw(|_| {
+            fb.draw(|buf| {
                 self.stencil.bind();
-                clear_color([0.0, 0.0, 0.0, 1.0]);
+                buf.clear_color([0.0, 0.0, 0.0, 1.0]);
                 glyph.stencil();
                 quad.draw();
             });

@@ -29,10 +29,8 @@ const NAME: &str = "_64\0";
 
 use std::io::Read;
 use underscore_64::{
-    data::List,
     event::{Event, EventFeed},
     render::{
-        clear_color,
         mesh::{Mesh, Topology, Usage},
         program::Program,
         shaders::{POS2D_TEX2D, TEX2D},
@@ -95,8 +93,6 @@ pub fn main() {
     let mut events = EventFeed;
     events.text_input(true);
 
-    let mut ch = List::new(1);
-    ch.push('A' as u8);
     loop {
         match events.next() {
             Some(event) => match event {
@@ -104,17 +100,15 @@ pub fn main() {
                     break;
                 }
 
-                Event::Keyboard { .. } => {}
-
-                Event::TextInput { text } => ch = text.iter().map(|ch| *ch as u8).collect(),
+                _ => {}
             },
 
             None => {}
         };
 
-        window.draw(|_| {
+        window.draw(|win| {
             glyph_prog.bind();
-            clear_color([0.0, 0.0, 0.0, 1.0]);
+            win.clear_color([0.0, 0.0, 0.0, 1.0]);
             text.bind();
             tex_quad.draw();
         });

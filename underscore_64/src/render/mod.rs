@@ -23,17 +23,3 @@ impl Drop for Context {
         }
     }
 }
-
-pub fn clear_color([r, g, b, a]: [f32; 4]) {
-    unsafe {
-        glClearColor(r, g, b, a);
-        glClear(GL_COLOR_BUFFER_BIT);
-    }
-}
-
-pub fn clear_stencil(s: i32) {
-    unsafe {
-        glClearStencil(s);
-        glClear(GL_COLOR_BUFFER_BIT);
-    }
-}
