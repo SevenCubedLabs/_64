@@ -47,7 +47,7 @@ impl Window {
 }
 
 impl RenderTarget for Window {
-    fn draw<T, F: FnMut(&Self) -> T>(&self, mut f: F) -> T {
+    fn draw<T, F: FnMut(&mut Self) -> T>(&mut self, mut f: F) -> T {
         unsafe {
             glViewport(0, 0, self.w, self.h);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);

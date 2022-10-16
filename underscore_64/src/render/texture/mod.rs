@@ -10,6 +10,7 @@ pub enum Target {
 #[derive(Copy, Clone)]
 pub enum Format {
     Rgb = GL_RGB,
+    Rgba = GL_RGBA,
     Stencil = GL_STENCIL_INDEX,
 }
 

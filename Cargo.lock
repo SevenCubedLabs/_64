@@ -8,7 +8,7 @@ version = "0.1.0"
 dependencies = [
  "log",
  "underscore_64",
- "underscore_txt",
+ "underscore_gui",
 ]
 
 [[package]]
@@ -325,19 +325,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "underscore_sys"
-version = "0.1.1"
-dependencies = [
- "bindgen",
-]
-
-[[package]]
-name = "underscore_txt"
+name = "underscore_gui"
 version = "0.1.0"
 dependencies = [
  "log",
  "ttf-parser",
  "underscore_64",
+]
+
+[[package]]
+name = "underscore_sys"
+version = "0.1.1"
+dependencies = [
+ "bindgen",
 ]
 
 [[package]]

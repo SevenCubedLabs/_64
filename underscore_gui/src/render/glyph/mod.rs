@@ -1,7 +1,7 @@
-use ttf_parser::{Face, OutlineBuilder, Rect};
+use super::SplineBuilder;
+use ttf_parser::{Face, FaceParsingError, Rect};
 use underscore_64::{
     data::List,
-    math::Spline,
     render::{
         framebuffer::{Attachment, Framebuffer},
         mesh::{Mesh, Topology, Usage},
@@ -14,12 +14,12 @@ use underscore_64::{
 
 #[derive(Debug)]
 pub struct Glyph {
-    pub(crate) tex: Option<Texture>,
-    pub(crate) x_min: i16,
-    pub(crate) x_max: i16,
-    pub(crate) y_min: i16,
-    pub(crate) y_max: i16,
-    pub(crate) h_advance: u16,
+    tex: Option<Texture>,
+    x_min: i16,
+    x_max: i16,
+    y_min: i16,
+    y_max: i16,
+    h_advance: u16,
 }
 
 #[derive(Debug)]
@@ -28,35 +28,98 @@ pub struct GlyphMap {
 }
 
 impl GlyphMap {
-    pub fn new(file: &[u8]) -> Option<Self> {
+    pub fn new(file: &[u8]) -> Result<Self, FaceParsingError> {
         let mut glyphs = List::new(128);
 
-        let face = Face::from_slice(file, 0).ok()?;
+        let face = Face::from_slice(file, 0)?;
         let builder = GlyphBuilder::new(face);
-        for ch in 0..128 {
-            let glyph = builder.glyph(ch as u8 as char);
+        for ch in 0..128u8 {
+            let glyph = builder.glyph(ch as char);
             glyphs.push(glyph);
         }
 
-        Some(Self { glyphs })
+        Ok(Self { glyphs })
     }
 
-    pub fn get(&self, idx: u8) -> Option<&Glyph> {
+    fn get(&self, idx: u8) -> Option<&Glyph> {
         self.glyphs[idx as _].as_ref()
     }
-}
 
-struct SplineBuilder {
-    splines: List<Spline>,
-    head: [f32; 2],
-}
+    fn dimensions(&self, line: &str) -> (i32, i32, i32) {
+        line.bytes().fold((0, 0, 0), |(w, h, y_origin), ch| {
+            let glyph = self.get(ch).unwrap();
+            (
+                w + glyph.h_advance as i32,
+                if glyph.y_max as i32 + y_origin > h {
+                    glyph.y_max as i32 + y_origin
+                } else {
+                    h
+                },
+                if -glyph.y_min as i32 > y_origin {
+                    -glyph.y_min as i32
+                } else {
+                    y_origin
+                },
+            )
+        })
+    }
 
-impl SplineBuilder {
-    fn new() -> Self {
-        Self {
-            splines: List::new(1),
-            head: [0.0; 2],
-        }
+    pub fn draw(
+        &self,
+        line: &str,
+        line_width: i32,
+        y_offset: i32,
+        target: &mut impl RenderTarget,
+    ) -> i32 {
+        let (w, h, y_origin) = self.dimensions(line);
+
+        let scale = line_width as f32 / w as f32;
+        let w = (w as f32 * scale).ceil() as i32;
+        let h = (h as f32 * scale).ceil() as i32;
+        let y_origin = (y_origin as f32 * scale).ceil() as i32;
+        log::debug!("computed texture size of {}x{}", w, h);
+        target.draw(|buf| {
+            let tex_quad = Mesh::new(
+                &[
+                    ([-1.0, 1.0], [0.0, 1.0]),
+                    ([1.0, 1.0], [1.0, 1.0]),
+                    ([-1.0, -1.0], [0.0, 0.0]),
+                    ([1.0, -1.0], [1.0, 0.0]),
+                ],
+                Usage::StaticDraw,
+                Topology::TriStrip,
+            );
+
+            let mut advance = 0;
+            for ch in line.bytes() {
+                let glyph = self.get(ch).unwrap();
+
+                // If it's got a glyph, print it
+                if let Some(tex) = &glyph.tex {
+                    // calc viewport
+                    let x = advance + (glyph.x_min as f32 * scale) as i32;
+                    let y = (glyph.y_min as f32 * scale) as i32 + y_origin;
+                    let w = advance + (glyph.x_max as f32 * scale) as i32 - x;
+                    let glyph_h = ((glyph.y_max - glyph.y_min) as f32 * scale) as i32;
+                    log::debug!(
+                        "drawing glyph {} with viewort {}, {}, {}, {}",
+                        ch as char,
+                        x,
+                        y - y_offset,
+                        w,
+                        h
+                    );
+
+                    buf.viewport([x, y_offset - h], [w, glyph_h]);
+                    tex.bind();
+                    tex_quad.draw();
+                }
+
+                advance += (glyph.h_advance as f32 * scale) as i32;
+            }
+        });
+
+        h
     }
 }
 
@@ -122,7 +185,7 @@ impl<'a> GlyphBuilder<'a> {
             let tex = Texture::new(Target::Tex2d, Format::Rgb, w, h);
             let stencil = Texture::new(Target::Tex2d, Format::Stencil, w, h);
 
-            let fb = Framebuffer::new(w, h)
+            let mut fb = Framebuffer::new(w, h)
                 .with_texture(Attachment::Color0, &tex)
                 .with_texture(Attachment::Stencil, &stencil);
 
@@ -143,34 +206,4 @@ impl<'a> GlyphBuilder<'a> {
             }
         })
     }
-}
-
-impl OutlineBuilder for SplineBuilder {
-    fn move_to(&mut self, x: f32, y: f32) {
-        self.splines.push(Spline::new(1));
-        self.head = [x, y];
-    }
-
-    fn line_to(&mut self, x: f32, y: f32) {
-        self.splines
-            .tail_mut()
-            .push([self.head, [x, y]].as_slice().into());
-        self.head = [x, y];
-    }
-
-    fn quad_to(&mut self, x1: f32, y1: f32, x: f32, y: f32) {
-        self.splines
-            .tail_mut()
-            .push([self.head, [x1, y1], [x, y]].as_slice().into());
-        self.head = [x, y];
-    }
-
-    fn curve_to(&mut self, x1: f32, y1: f32, x2: f32, y2: f32, x: f32, y: f32) {
-        self.splines
-            .tail_mut()
-            .push([self.head, [x1, y1], [x2, y2], [x, y]].as_slice().into());
-        self.head = [x, y];
-    }
-
-    fn close(&mut self) {}
 }

@@ -38,7 +38,7 @@ use underscore_64::{
         window::Window,
     },
 };
-use underscore_txt::{glyph::GlyphMap, text::TextBox};
+use underscore_gui::render::TtfSystem;
 
 use log::{Level, LevelFilter, Metadata, Record};
 
@@ -65,7 +65,7 @@ pub fn main() {
         .map(|()| log::set_max_level(LevelFilter::Debug))
         .expect("failed to init logs");
     log::info!("---BEGIN LOG---");
-    let window = Window::new(NAME.as_ptr(), 1920, 1080).expect("window creation failed");
+    let mut window = Window::new(NAME.as_ptr(), 1920, 1080).expect("window creation failed");
     let _context = window.context();
 
     let file = std::fs::File::open("assets/ttf/Hack-Regular.ttf")
@@ -74,8 +74,9 @@ pub fn main() {
         .collect::<Result<Vec<u8>, std::io::Error>>()
         .expect("couldn't read ./assets/ttf/Hack-Regular.ttf");
 
-    let glyphs = GlyphMap::new(&file).expect("Hack-Regular.ttf parse failed");
-    let text = TextBox::from(b"hello world!".as_slice()).draw(&glyphs, 1920);
+    let mut ttf = TtfSystem::new();
+    let font = ttf.load_font(&file).expect("Hack-Regular.ttf parse failed");
+    let text = ttf.draw("hello world!\nmultiline", font, [1920, 1080], 128);
 
     let tex_quad = Mesh::new(
         &[
