@@ -28,17 +28,15 @@ pub unsafe extern "C" fn _start() {
 const NAME: &str = "_64\0";
 
 use std::io::Read;
-use underscore_64::{
-    event::{Event, EventFeed},
-    render::{
-        mesh::{Mesh, Topology, Usage},
-        program::Program,
-        shaders::{POS2D_TEX2D, TEX2D},
-        target::RenderTarget,
-        window::Window,
-    },
+use underscore_64::event::{Event, EventFeed};
+use underscore_gfx::{
+    mesh::{Mesh, Topology, Usage},
+    program::Program,
+    shaders::{POS2D_TEX2D, TEX2D},
+    target::RenderTarget,
+    window::Window,
 };
-use underscore_gui::tty::TtfSystem;
+use underscore_gui::text::TextSystem;
 
 use log::{Level, LevelFilter, Metadata, Record};
 
@@ -74,10 +72,10 @@ pub fn main() {
         .collect::<Result<Vec<u8>, std::io::Error>>()
         .expect("couldn't read ./assets/ttf/Hack-Regular.ttf");
 
-    let mut ttf = TtfSystem::new();
+    let mut ttf = TextSystem::new();
     let font = ttf.load_font(&file).expect("Hack-Regular.ttf parse failed");
 
-    let mut greets = underscore_gui::tty::TextBox::new(120, [0, 0], [1920, 1080]);
+    let mut greets = underscore_gui::Text::new(120, [1920, 1080]);
     greets.update("hello world");
     let text = ttf.draw(&mut greets);
 

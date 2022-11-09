@@ -43,8 +43,10 @@ impl Texture {
 
         Self { id, target }
     }
+}
 
-    pub fn bind(&self) {
+impl Bind for Texture {
+    fn bind(&self) {
         unsafe {
             glBindTexture(self.target as _, self.id);
         }

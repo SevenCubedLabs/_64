@@ -2,21 +2,17 @@ mod glyph;
 
 use glyph::GlyphMap;
 use ttf_parser::FaceParsingError;
-use underscore_64::{
-    data::List,
-    render::{
-        framebuffer::{Attachment, Framebuffer},
-        program::Program,
-        shaders::{POS2D_TEX2D, TEX2D},
-        target::RenderTarget,
-        texture::{Format, Target, Texture},
-    },
+use underscore_64::data::List;
+use underscore_gfx::{
+    framebuffer::{Attachment, Framebuffer},
+    program::Program,
+    shaders::{POS2D_TEX2D, TEX2D},
+    target::RenderTarget,
+    texture::{Format, Target, Texture},
 };
 
-pub struct TextBox {
+pub struct Text {
     columns: i32,
-    x: i32,
-    y: i32,
     w: i32,
     h: i32,
     lines: List<List<u8>>,
@@ -25,11 +21,11 @@ pub struct TextBox {
     buf: Framebuffer,
 }
 
-pub struct TtfSystem {
+pub struct TextSystem {
     fonts: List<GlyphMap>,
 }
 
-impl TtfSystem {
+impl TextSystem {
     pub fn new() -> Self {
         Self {
             fonts: List::new(1),
@@ -42,7 +38,7 @@ impl TtfSystem {
         Ok(self.fonts.len() - 1)
     }
 
-    pub fn draw<'a>(&'a mut self, text: &'a mut TextBox) -> &'a Texture {
+    pub fn draw<'a>(&'a mut self, text: &'a mut Text) -> &'a Texture {
         let shader = Program::new(POS2D_TEX2D, TEX2D);
         shader.bind();
 
@@ -60,14 +56,12 @@ impl TtfSystem {
     }
 }
 
-impl TextBox {
-    pub fn new(columns: i32, [x, y]: [i32; 2], [w, h]: [i32; 2]) -> Self {
+impl Text {
+    pub fn new(columns: i32, [w, h]: [i32; 2]) -> Self {
         let tex = Texture::new(Target::Tex2d, Format::Rgba, w, h);
         let buf = Framebuffer::new(w, h).with_texture(Attachment::Color0, &tex);
         Self {
             columns,
-            x,
-            y,
             w,
             h,
             lines: List::new(1),

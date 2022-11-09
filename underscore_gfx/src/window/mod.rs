@@ -1,4 +1,4 @@
-use crate::render::Context;
+use crate::Context;
 use underscore_sys::*;
 
 pub struct Window {

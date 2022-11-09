@@ -1,15 +1,12 @@
 use ttf_parser::{Face, FaceParsingError, OutlineBuilder, Rect};
-use underscore_64::{
-    data::List,
-    math::Spline,
-    render::{
-        framebuffer::{Attachment, Framebuffer},
-        mesh::{Mesh, Topology, Usage},
-        program::Program,
-        shaders::{POS2D, WHITE},
-        target::RenderTarget,
-        texture::{Format, Target, Texture},
-    },
+use underscore_64::{data::List, math::Spline};
+use underscore_gfx::{
+    framebuffer::{Attachment, Framebuffer},
+    mesh::{Mesh, Topology, Usage},
+    program::Program,
+    shaders::{POS2D, WHITE},
+    target::RenderTarget,
+    texture::{Format, Target, Texture},
 };
 
 #[derive(Debug)]
@@ -102,7 +99,7 @@ impl GlyphMap {
                     let w = advance + (glyph.x_max as f32 * scale) as i32 - x;
                     let glyph_h = ((glyph.y_max - glyph.y_min) as f32 * scale) as i32;
                     log::debug!(
-                        "drawing glyph {} with viewort {}, {}, {}, {}",
+                        "drawing glyph {} with viewport {}, {}, {}, {}",
                         ch as char,
                         x,
                         y - y_offset,

@@ -8,6 +8,7 @@ version = "0.1.0"
 dependencies = [
  "log",
  "underscore_64",
+ "underscore_gfx",
  "underscore_gui",
 ]
 
@@ -325,12 +326,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "underscore_gfx"
+version = "0.1.0"
+dependencies = [
+ "underscore_64",
+ "underscore_sys",
+]
+
+[[package]]
 name = "underscore_gui"
 version = "0.1.0"
 dependencies = [
  "log",
  "ttf-parser",
  "underscore_64",
+ "underscore_gfx",
 ]
 
 [[package]]

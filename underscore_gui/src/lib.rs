@@ -1,1 +1,3 @@
-pub mod tty;
+pub mod text;
+
+pub use text::Text;

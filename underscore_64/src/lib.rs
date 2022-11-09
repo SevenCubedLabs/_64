@@ -4,7 +4,6 @@
 pub mod data;
 pub mod event;
 pub mod math;
-pub mod render;
 
 pub fn exit(code: i32) {
     unsafe {
