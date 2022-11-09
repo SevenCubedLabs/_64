@@ -38,7 +38,7 @@ use underscore_64::{
         window::Window,
     },
 };
-use underscore_gui::render::TtfSystem;
+use underscore_gui::tty::TtfSystem;
 
 use log::{Level, LevelFilter, Metadata, Record};
 
@@ -76,7 +76,10 @@ pub fn main() {
 
     let mut ttf = TtfSystem::new();
     let font = ttf.load_font(&file).expect("Hack-Regular.ttf parse failed");
-    let text = ttf.draw("hello world!\nmultiline", font, [1920, 1080], 128);
+
+    let mut greets = underscore_gui::tty::TextBox::new(120, [0, 0], [1920, 1080]);
+    greets.update("hello world");
+    let text = ttf.draw(&mut greets);
 
     let tex_quad = Mesh::new(
         &[

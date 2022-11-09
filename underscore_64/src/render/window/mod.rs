@@ -1,10 +1,10 @@
-use crate::render::{target::RenderTarget, Context};
+use crate::render::Context;
 use underscore_sys::*;
 
 pub struct Window {
     window: *mut SDL_Window,
-    w: i32,
-    h: i32,
+    pub(crate) w: i32,
+    pub(crate) h: i32,
 }
 
 impl Window {
@@ -43,16 +43,6 @@ impl Window {
         unsafe {
             SDL_GL_SwapWindow(self.window);
         }
-    }
-}
-
-impl RenderTarget for Window {
-    fn draw<T, F: FnMut(&mut Self) -> T>(&mut self, mut f: F) -> T {
-        unsafe {
-            glViewport(0, 0, self.w, self.h);
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        }
-        f(self)
     }
 }
 

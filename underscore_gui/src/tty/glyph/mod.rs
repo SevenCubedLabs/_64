@@ -1,7 +1,7 @@
-use super::SplineBuilder;
-use ttf_parser::{Face, FaceParsingError, Rect};
+use ttf_parser::{Face, FaceParsingError, OutlineBuilder, Rect};
 use underscore_64::{
     data::List,
+    math::Spline,
     render::{
         framebuffer::{Attachment, Framebuffer},
         mesh::{Mesh, Topology, Usage},
@@ -45,8 +45,8 @@ impl GlyphMap {
         self.glyphs[idx as _].as_ref()
     }
 
-    fn dimensions(&self, line: &str) -> (i32, i32, i32) {
-        line.bytes().fold((0, 0, 0), |(w, h, y_origin), ch| {
+    fn dimensions(&self, line: &[u8]) -> (i32, i32, i32) {
+        line.iter().fold((0, 0, 0), |(w, h, y_origin), &ch| {
             let glyph = self.get(ch).unwrap();
             (
                 w + glyph.h_advance as i32,
@@ -66,7 +66,7 @@ impl GlyphMap {
 
     pub fn draw(
         &self,
-        line: &str,
+        line: &[u8],
         line_width: i32,
         y_offset: i32,
         target: &mut impl RenderTarget,
@@ -91,7 +91,7 @@ impl GlyphMap {
             );
 
             let mut advance = 0;
-            for ch in line.bytes() {
+            for &ch in line.iter() {
                 let glyph = self.get(ch).unwrap();
 
                 // If it's got a glyph, print it
@@ -206,4 +206,48 @@ impl<'a> GlyphBuilder<'a> {
             }
         })
     }
+}
+
+struct SplineBuilder {
+    splines: List<Spline>,
+    head: [f32; 2],
+}
+
+impl SplineBuilder {
+    fn new() -> Self {
+        Self {
+            splines: List::new(1),
+            head: [0.0; 2],
+        }
+    }
+}
+
+impl OutlineBuilder for SplineBuilder {
+    fn move_to(&mut self, x: f32, y: f32) {
+        self.splines.push(Spline::new(1));
+        self.head = [x, y];
+    }
+
+    fn line_to(&mut self, x: f32, y: f32) {
+        self.splines
+            .tail_mut()
+            .push([self.head, [x, y]].as_slice().into());
+        self.head = [x, y];
+    }
+
+    fn quad_to(&mut self, x1: f32, y1: f32, x: f32, y: f32) {
+        self.splines
+            .tail_mut()
+            .push([self.head, [x1, y1], [x, y]].as_slice().into());
+        self.head = [x, y];
+    }
+
+    fn curve_to(&mut self, x1: f32, y1: f32, x2: f32, y2: f32, x: f32, y: f32) {
+        self.splines
+            .tail_mut()
+            .push([self.head, [x1, y1], [x2, y2], [x, y]].as_slice().into());
+        self.head = [x, y];
+    }
+
+    fn close(&mut self) {}
 }
