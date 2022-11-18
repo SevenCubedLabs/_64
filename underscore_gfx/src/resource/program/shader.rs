@@ -1,4 +1,4 @@
-use underscore_sys::*;
+use crate::bindings::*;
 
 pub struct Shader(GLuint);
 

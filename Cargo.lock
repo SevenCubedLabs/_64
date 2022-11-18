@@ -6,10 +6,10 @@ version = 3
 name = "_64"
 version = "0.1.0"
 dependencies = [
- "log",
  "underscore_64",
  "underscore_gfx",
  "underscore_gui",
+ "underscore_sdl",
 ]
 
 [[package]]
@@ -322,15 +322,15 @@ checksum = "7b3e06c9b9d80ed6b745c7159c40b311ad2916abb34a49e9be2653b90db0d8dd"
 name = "underscore_64"
 version = "0.2.0"
 dependencies = [
- "underscore_sys",
+ "log",
 ]
 
 [[package]]
 name = "underscore_gfx"
 version = "0.1.0"
 dependencies = [
+ "bindgen",
  "underscore_64",
- "underscore_sys",
 ]
 
 [[package]]
@@ -344,10 +344,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "underscore_sys"
-version = "0.1.1"
+name = "underscore_sdl"
+version = "0.1.0"
 dependencies = [
  "bindgen",
+ "underscore_64",
 ]
 
 [[package]]

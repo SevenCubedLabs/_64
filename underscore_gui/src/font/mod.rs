@@ -1,30 +1,23 @@
 use ttf_parser::{Face, FaceParsingError, OutlineBuilder, Rect};
 use underscore_64::{data::List, math::Spline};
 use underscore_gfx::{
-    framebuffer::{Attachment, Framebuffer},
-    mesh::{Mesh, Topology, Usage},
-    program::Program,
-    shaders::{POS2D, WHITE},
-    target::RenderTarget,
-    texture::{Format, Target, Texture},
+    assets::shaders::{POS2D, WHITE},
+    resource::{
+        buffer::Usage,
+        framebuffer::{Attachment, Framebuffer},
+        mesh::{Mesh, Topology},
+        program::Program,
+        texture::{Texture, TEX_2D},
+        Resource, Target,
+    },
 };
 
 #[derive(Debug)]
-pub struct Glyph {
-    tex: Option<Texture>,
-    x_min: i16,
-    x_max: i16,
-    y_min: i16,
-    y_max: i16,
-    h_advance: u16,
-}
-
-#[derive(Debug)]
-pub struct GlyphMap {
+pub struct Font {
     glyphs: List<Option<Glyph>>,
 }
 
-impl GlyphMap {
+impl Font {
     pub fn new(file: &[u8]) -> Result<Self, FaceParsingError> {
         let mut glyphs = List::new(128);
 
@@ -61,13 +54,7 @@ impl GlyphMap {
         })
     }
 
-    pub fn draw(
-        &self,
-        line: &[u8],
-        line_width: i32,
-        y_offset: i32,
-        target: &mut impl RenderTarget,
-    ) -> i32 {
+    pub fn draw(&self, line: &[u8], line_width: i32, y_offset: i32, target: &impl Target) -> i32 {
         let (w, h, y_origin) = self.dimensions(line);
 
         let scale = line_width as f32 / w as f32;
@@ -75,49 +62,61 @@ impl GlyphMap {
         let h = (h as f32 * scale).ceil() as i32;
         let y_origin = (y_origin as f32 * scale).ceil() as i32;
         log::debug!("computed texture size of {}x{}", w, h);
-        target.draw(|buf| {
-            let tex_quad = Mesh::new(
-                &[
-                    ([-1.0, 1.0], [0.0, 1.0]),
-                    ([1.0, 1.0], [1.0, 1.0]),
-                    ([-1.0, -1.0], [0.0, 0.0]),
-                    ([1.0, -1.0], [1.0, 0.0]),
-                ],
-                Usage::StaticDraw,
-                Topology::TriStrip,
-            );
 
-            let mut advance = 0;
-            for &ch in line.iter() {
-                let glyph = self.get(ch).unwrap();
+        let tex_quad = Mesh::new(
+            &[
+                ([-1.0, 1.0], [0.0, 1.0]),
+                ([1.0, 1.0], [1.0, 1.0]),
+                ([-1.0, -1.0], [0.0, 0.0]),
+                ([1.0, -1.0], [1.0, 0.0]),
+            ],
+            Usage::StaticDraw,
+            Topology::TriStrip,
+        );
 
-                // If it's got a glyph, print it
-                if let Some(tex) = &glyph.tex {
-                    // calc viewport
-                    let x = advance + (glyph.x_min as f32 * scale) as i32;
-                    let y = (glyph.y_min as f32 * scale) as i32 + y_origin;
-                    let w = advance + (glyph.x_max as f32 * scale) as i32 - x;
-                    let glyph_h = ((glyph.y_max - glyph.y_min) as f32 * scale) as i32;
-                    log::debug!(
-                        "drawing glyph {} with viewport {}, {}, {}, {}",
-                        ch as char,
-                        x,
-                        y - y_offset,
-                        w,
-                        h
-                    );
+        target.bind();
+        let mut advance = 0;
+        for &ch in line.iter() {
+            let glyph = self.get(ch).unwrap();
 
-                    buf.viewport([x, y_offset - h], [w, glyph_h]);
-                    tex.bind();
-                    tex_quad.draw();
-                }
+            // If it's got a glyph, print it
+            if let Some(tex) = &glyph.tex {
+                // calc viewport
+                let x_min = advance + (glyph.x_min as f32 * scale).floor() as i32;
+                let x_max = advance + (glyph.x_max as f32 * scale).floor() as i32;
 
-                advance += (glyph.h_advance as f32 * scale) as i32;
+                advance += (glyph.h_advance as f32 * scale).floor() as i32;
+
+                let y_min = (glyph.y_min as f32 * scale).floor() as i32;
+                let y_max = (glyph.y_max as f32 * scale).floor() as i32;
+
+                log::debug!(
+                    "drawing glyph {} with viewport {}, {}, {}, {}",
+                    ch as char,
+                    x_min,
+                    y_origin + y_min,
+                    x_max - x_min,
+                    y_max - y_min,
+                );
+
+                target.viewport([x_min, y_origin + y_min], [x_max - x_min, y_max - y_min]);
+                tex.bind();
+                tex_quad.draw();
             }
-        });
+        }
 
         h
     }
+}
+
+#[derive(Debug)]
+pub struct Glyph {
+    tex: Option<Texture<[f32; 4]>>,
+    x_min: i16,
+    x_max: i16,
+    y_min: i16,
+    y_max: i16,
+    h_advance: u16,
 }
 
 struct GlyphBuilder<'a> {
@@ -134,6 +133,7 @@ impl<'a> GlyphBuilder<'a> {
     }
 
     fn glyph(&self, ch: char) -> Option<Glyph> {
+        log::debug!("rendering '{}'", ch);
         let mut outline = SplineBuilder::new();
         self.face.glyph_index(ch).map(|idx| {
             let Rect {
@@ -179,19 +179,21 @@ impl<'a> GlyphBuilder<'a> {
             );
 
             // Prepare render target
-            let tex = Texture::new(Target::Tex2d, Format::Rgb, w, h);
-            let stencil = Texture::new(Target::Tex2d, Format::Stencil, w, h);
+            let tex: Texture<[f32; 4]> = Texture::new(TEX_2D, [w, h]);
+            let stencil: Texture<i32> = Texture::new(TEX_2D, [w, h]);
 
-            let mut fb = Framebuffer::new(w, h)
+            let fb = Framebuffer::new(w, h)
                 .with_texture(Attachment::Color0, &tex)
                 .with_texture(Attachment::Stencil, &stencil);
 
-            fb.draw(|buf| {
-                self.stencil.bind();
-                buf.clear_color([0.0, 0.0, 0.0, 1.0]);
-                glyph.stencil();
-                quad.draw();
-            });
+            fb.bind();
+            fb.viewport([0, 0], [w, h]);
+            fb.clear_color([0.0, 0.0, 0.0, 0.0]);
+
+            self.stencil.bind();
+            stencil.bind();
+            glyph.stencil();
+            quad.draw();
 
             Glyph {
                 tex: Some(tex),

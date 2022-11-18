@@ -1,5 +1,6 @@
+use crate::bindings::*;
+use crate::resource::Resource;
 use core::mem::size_of;
-use underscore_sys::*;
 
 pub struct Buffer {
     _type: GLenum,
@@ -41,12 +42,14 @@ impl Buffer {
         }
     }
 
-    pub fn bind(&self) {
-        unsafe { glBindBuffer(self._type, self.buf) }
-    }
-
     pub fn len(&self) -> usize {
         self.len
+    }
+}
+
+impl Resource for Buffer {
+    fn bind(&self) {
+        unsafe { glBindBuffer(self._type, self.buf) }
     }
 }
 

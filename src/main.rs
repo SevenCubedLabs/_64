@@ -26,17 +26,21 @@ pub unsafe extern "C" fn _start() {
 }
 
 const NAME: &str = "_64\0";
+const WIDTH: i32 = 1920;
+const HEIGHT: i32 = 1080;
 
-use std::io::Read;
-use underscore_64::event::{Event, EventFeed};
+use underscore_64::log;
 use underscore_gfx::{
-    mesh::{Mesh, Topology, Usage},
-    program::Program,
-    shaders::{POS2D_TEX2D, TEX2D},
-    target::RenderTarget,
-    window::Window,
+    assets::shaders::{POS2D_TEX2D, TEX2D},
+    resource::{
+        mesh::{Mesh, Topology, Usage},
+        program::Program,
+        window::Window,
+        Resource, Target,
+    },
 };
-use underscore_gui::text::TextSystem;
+use underscore_gui::TextSystem;
+use underscore_sdl::{Event, EventFeed};
 
 use log::{Level, LevelFilter, Metadata, Record};
 
@@ -63,21 +67,15 @@ pub fn main() {
         .map(|()| log::set_max_level(LevelFilter::Debug))
         .expect("failed to init logs");
     log::info!("---BEGIN LOG---");
-    let mut window = Window::new(NAME.as_ptr(), 1920, 1080).expect("window creation failed");
+    let window = Window::new(NAME.as_ptr(), 1920, 1080).expect("window creation failed");
     let _context = window.context();
 
-    let file = std::fs::File::open("assets/ttf/Hack-Regular.ttf")
-        .expect("couldn't open ./assets/ttf/Hack-Regular.ttf")
-        .bytes()
-        .collect::<Result<Vec<u8>, std::io::Error>>()
-        .expect("couldn't read ./assets/ttf/Hack-Regular.ttf");
+    let text = TextSystem::default();
 
-    let mut ttf = TextSystem::new();
-    let font = ttf.load_font(&file).expect("Hack-Regular.ttf parse failed");
+    let mut greets = underscore_gui::text::Text::new(120, [1920, 1080]);
+    greets.update("hello world\nuuuuuuuh");
 
-    let mut greets = underscore_gui::Text::new(120, [1920, 1080]);
-    greets.update("hello world");
-    let text = ttf.draw(&mut greets);
+    text.render(0, &mut greets);
 
     let tex_quad = Mesh::new(
         &[
@@ -91,9 +89,13 @@ pub fn main() {
     );
 
     let glyph_prog = Program::new(POS2D_TEX2D, TEX2D);
+    glyph_prog.bind();
 
     let mut events = EventFeed;
     events.text_input(true);
+
+    log::debug!("end setup");
+    log::set_max_level(log::LevelFilter::Off);
 
     loop {
         match events.next() {
@@ -108,15 +110,15 @@ pub fn main() {
             None => {}
         };
 
-        window.draw(|win| {
-            glyph_prog.bind();
-            win.clear_color([0.0, 0.0, 0.0, 1.0]);
-            text.bind();
-            tex_quad.draw();
-        });
+        window.bind();
+        window.clear_color([0.0, 0.0, 0.0, 1.0]);
+        window.viewport([0, 0], [WIDTH, HEIGHT]);
+        greets.view().bind();
+        tex_quad.draw();
         window.swap();
     }
 
+    log::set_max_level(log::LevelFilter::Debug);
     #[cfg(feature = "minsize")]
     underscore_64::exit(0);
 }

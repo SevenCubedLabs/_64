@@ -1,6 +1,7 @@
-use underscore_sys::*;
-
 mod shader;
+
+use crate::bindings::*;
+use crate::resource::Resource;
 use shader::Shader;
 
 pub struct Program(GLuint);
@@ -20,8 +21,10 @@ impl Program {
 
         Program(prog)
     }
+}
 
-    pub fn bind(&self) {
+impl Resource for Program {
+    fn bind(&self) {
         unsafe {
             glUseProgram(self.0);
         }

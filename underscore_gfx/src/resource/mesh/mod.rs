@@ -1,10 +1,9 @@
-use super::buffer::Buffer;
-pub use super::buffer::Usage;
-use underscore_sys::*;
-
-use core::marker::PhantomData;
-
 mod vertex;
+
+use crate::bindings::*;
+pub use crate::resource::buffer::Usage;
+use crate::resource::{buffer::Buffer, Resource};
+use core::marker::PhantomData;
 use vertex::Vertex;
 
 pub struct Mesh<V: Vertex> {
@@ -44,9 +43,28 @@ impl<V: Vertex> Mesh<V> {
         self.vertices.update(verts);
     }
 
+    pub fn stencil(&self) {
+        unsafe {
+            glEnable(GL_STENCIL_TEST);
+            glStencilMask(0xFF);
+            glColorMask(0, 0, 0, 0);
+            glStencilFunc(GL_ALWAYS, 1, 0xFF);
+            glClearStencil(0);
+            glClear(GL_STENCIL_BUFFER_BIT);
+            glStencilOp(GL_INVERT, GL_INVERT, GL_INVERT);
+
+            self.draw();
+
+            glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
+            glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+            glColorMask(0xFF, 0xFF, 0xFF, 0xFF);
+            glStencilMask(0);
+        }
+    }
+
     pub fn draw(&self) {
         unsafe {
-            glBindVertexArray(self.vao);
+            self.bind();
             match &self.topology {
                 Topology::TriIndexed(indices) => {
                     glDrawElements(
@@ -75,24 +93,11 @@ impl<V: Vertex> Mesh<V> {
             }
         }
     }
+}
 
-    pub fn stencil(&self) {
-        unsafe {
-            glEnable(GL_STENCIL_TEST);
-            glStencilMask(0xFF);
-            glColorMask(0, 0, 0, 0);
-            glStencilFunc(GL_ALWAYS, 1, 0xFF);
-            glClearStencil(0);
-            glClear(GL_STENCIL_BUFFER_BIT);
-            glStencilOp(GL_INVERT, GL_INVERT, GL_INVERT);
-
-            self.draw();
-
-            glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
-            glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-            glColorMask(0xFF, 0xFF, 0xFF, 0xFF);
-            glStencilMask(0);
-        }
+impl<V: Vertex> Resource for Mesh<V> {
+    fn bind(&self) {
+        unsafe { glBindVertexArray(self.vao) }
     }
 }
 

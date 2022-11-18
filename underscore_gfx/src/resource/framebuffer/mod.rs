@@ -1,6 +1,11 @@
-use super::{target::RenderTarget, texture::Texture};
-use underscore_sys::*;
+use crate::bindings::*;
+use crate::resource::{
+    texture::{Format, Texture},
+    Resource, Target,
+};
+use underscore_64::log;
 
+#[derive(Debug)]
 pub struct Framebuffer {
     fb: GLuint,
     w: i32,
@@ -18,7 +23,7 @@ impl Framebuffer {
         Self { fb, w, h }
     }
 
-    pub fn with_texture(self, attach: Attachment, tex: &Texture) -> Self {
+    pub fn with_texture<F: Format>(self, attach: Attachment, tex: &Texture<F>) -> Self {
         unsafe {
             glFramebufferTexture(GL_FRAMEBUFFER, attach as _, **tex, 0);
             glDrawBuffers(1, [attach as _].as_ptr());
@@ -26,24 +31,22 @@ impl Framebuffer {
 
         self
     }
+}
 
+impl Resource for Framebuffer {
     fn bind(&self) {
+        log::debug!("binding framebuffer {}", self.fb);
         unsafe {
             glBindFramebuffer(GL_FRAMEBUFFER, self.fb);
         }
     }
 }
 
-impl RenderTarget for Framebuffer {
-    fn draw<T, F: FnMut(&mut Self) -> T>(&mut self, mut f: F) -> T {
-        self.bind();
-        self.viewport([0, 0], [self.w, self.h]);
-        f(self)
-    }
-}
+impl Target for Framebuffer {}
 
 impl Drop for Framebuffer {
     fn drop(&mut self) {
+        log::debug!("dropping framebuffer {}", self.fb);
         unsafe {
             glDeleteFramebuffers(1, &self.fb);
         }

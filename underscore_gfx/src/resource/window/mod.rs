@@ -1,5 +1,8 @@
-use crate::Context;
-use underscore_sys::*;
+use crate::bindings::*;
+use crate::{
+    resource::{Resource, Target},
+    GfxSystem,
+};
 
 pub struct Window {
     window: *mut SDL_Window,
@@ -30,12 +33,12 @@ impl Window {
         }
     }
 
-    pub fn context(&self) -> Context {
+    pub fn context(&self) -> GfxSystem {
         unsafe {
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
 
-            Context::new(self.window)
+            GfxSystem::new(self.window)
         }
     }
 
@@ -53,3 +56,14 @@ impl Drop for Window {
         }
     }
 }
+
+impl Resource for Window {
+    fn bind(&self) {
+        unsafe {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glViewport(0, 0, self.w, self.h);
+        }
+    }
+}
+
+impl Target for Window {}
