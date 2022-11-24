@@ -73,9 +73,8 @@ pub fn main() {
     let text = TextSystem::default();
 
     let mut greets = underscore_gui::text::Text::new(120, [1920, 1080]);
-    greets.update("hello world\nuuuuuuuh");
-
-    text.render(0, &mut greets);
+    greets.update("hello\nworld");
+    text.draw(&greets, 0, 10.0);
 
     let tex_quad = Mesh::new(
         &[

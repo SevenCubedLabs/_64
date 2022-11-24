@@ -1,8 +1,5 @@
-mod shader;
-
-use crate::bindings::*;
-use crate::resource::Resource;
-use shader::Shader;
+use crate::resource::{shader::Shader, Resource};
+use underscore_64::bindings::*;
 
 pub struct Program(GLuint);
 

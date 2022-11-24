@@ -1,7 +1,6 @@
-use crate::bindings::*;
 use crate::resource::Resource;
 use core::marker::PhantomData;
-use underscore_64::log;
+use underscore_64::{bindings::*, log};
 
 pub type TextureRgb = Texture<[f32; 3]>;
 pub type TextureRgba = Texture<[f32; 4]>;
@@ -28,7 +27,6 @@ pub const TEX_2D: u32 = GL_TEXTURE_2D;
 #[derive(Debug)]
 pub struct Texture<F: Format> {
     id: GLuint,
-    dim: [i32; 2],
     target: GLuint,
     format: PhantomData<F>,
 }
@@ -56,7 +54,6 @@ impl<F: Format> Texture<F> {
 
         Self {
             id,
-            dim: [w, h],
             target,
             format: PhantomData,
         }

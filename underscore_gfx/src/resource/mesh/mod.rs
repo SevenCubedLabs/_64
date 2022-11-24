@@ -1,9 +1,9 @@
 mod vertex;
 
-use crate::bindings::*;
 pub use crate::resource::buffer::Usage;
 use crate::resource::{buffer::Buffer, Resource};
 use core::marker::PhantomData;
+use underscore_64::bindings::*;
 use vertex::Vertex;
 
 pub struct Mesh<V: Vertex> {

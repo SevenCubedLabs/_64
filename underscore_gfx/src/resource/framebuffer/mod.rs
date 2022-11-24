@@ -1,43 +1,37 @@
-use crate::bindings::*;
 use crate::resource::{
     texture::{Format, Texture},
     Resource, Target,
 };
+use underscore_64::bindings::*;
 use underscore_64::log;
 
 #[derive(Debug)]
-pub struct Framebuffer {
-    fb: GLuint,
-    w: i32,
-    h: i32,
-}
+pub struct Framebuffer(GLuint);
 
 impl Framebuffer {
-    pub fn new(w: i32, h: i32) -> Self {
+    pub fn new() -> Self {
         let mut fb = 0;
         unsafe {
             glGenFramebuffers(1, &mut fb);
             glBindFramebuffer(GL_FRAMEBUFFER, fb);
         }
 
-        Self { fb, w, h }
+        Self(fb)
     }
 
-    pub fn with_texture<F: Format>(self, attach: Attachment, tex: &Texture<F>) -> Self {
+    pub fn attach<F: Format>(&self, attach: Attachment, tex: &Texture<F>) {
         unsafe {
             glFramebufferTexture(GL_FRAMEBUFFER, attach as _, **tex, 0);
             glDrawBuffers(1, [attach as _].as_ptr());
         }
-
-        self
     }
 }
 
 impl Resource for Framebuffer {
     fn bind(&self) {
-        log::debug!("binding framebuffer {}", self.fb);
+        log::debug!("binding framebuffer {}", self.0);
         unsafe {
-            glBindFramebuffer(GL_FRAMEBUFFER, self.fb);
+            glBindFramebuffer(GL_FRAMEBUFFER, self.0);
         }
     }
 }
@@ -46,9 +40,9 @@ impl Target for Framebuffer {}
 
 impl Drop for Framebuffer {
     fn drop(&mut self) {
-        log::debug!("dropping framebuffer {}", self.fb);
+        log::debug!("dropping framebuffer {}", self.0);
         unsafe {
-            glDeleteFramebuffers(1, &self.fb);
+            glDeleteFramebuffers(1, &self.0);
         }
     }
 }

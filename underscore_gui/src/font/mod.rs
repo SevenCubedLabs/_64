@@ -12,9 +12,13 @@ use underscore_gfx::{
     },
 };
 
+const PIXELS_PER_EM: f32 = 16.0;
+
 #[derive(Debug)]
 pub struct Font {
     glyphs: List<Option<Glyph>>,
+    pub pixels_per_unit: f32,
+    pub line_height: i16,
 }
 
 impl Font {
@@ -22,110 +26,91 @@ impl Font {
         let mut glyphs = List::new(128);
 
         let face = Face::from_slice(file, 0)?;
-        let builder = GlyphBuilder::new(face);
+        let builder = GlyphBuilder::new(&face);
         for ch in 0..128u8 {
             let glyph = builder.glyph(ch as char);
             glyphs.push(glyph);
         }
 
-        Ok(Self { glyphs })
-    }
-
-    fn get(&self, idx: u8) -> Option<&Glyph> {
-        self.glyphs[idx as _].as_ref()
-    }
-
-    fn dimensions(&self, line: &[u8]) -> (i32, i32, i32) {
-        line.iter().fold((0, 0, 0), |(w, h, y_origin), &ch| {
-            let glyph = self.get(ch).unwrap();
-            (
-                w + glyph.h_advance as i32,
-                if glyph.y_max as i32 + y_origin > h {
-                    glyph.y_max as i32 + y_origin
-                } else {
-                    h
-                },
-                if -glyph.y_min as i32 > y_origin {
-                    -glyph.y_min as i32
-                } else {
-                    y_origin
-                },
-            )
+        Ok(Self {
+            glyphs,
+            pixels_per_unit: PIXELS_PER_EM / face.units_per_em() as f32,
+            line_height: face.height(),
         })
     }
 
-    pub fn draw(&self, line: &[u8], line_width: i32, y_offset: i32, target: &impl Target) -> i32 {
-        let (w, h, y_origin) = self.dimensions(line);
+    pub fn get(&self, idx: u8) -> Option<&Glyph> {
+        self.glyphs[idx as _].as_ref()
+    }
 
-        let scale = line_width as f32 / w as f32;
-        let w = (w as f32 * scale).ceil() as i32;
-        let h = (h as f32 * scale).ceil() as i32;
-        let y_origin = (y_origin as f32 * scale).ceil() as i32;
-        log::debug!("computed texture size of {}x{}", w, h);
-
-        let tex_quad = Mesh::new(
-            &[
-                ([-1.0, 1.0], [0.0, 1.0]),
-                ([1.0, 1.0], [1.0, 1.0]),
-                ([-1.0, -1.0], [0.0, 0.0]),
-                ([1.0, -1.0], [1.0, 0.0]),
-            ],
-            Usage::StaticDraw,
-            Topology::TriStrip,
-        );
-
+    pub fn draw(&self, text: &[u8], [x, y]: [f32; 2], em: f32, target: &impl Target) {
+        let scale = em * self.pixels_per_unit;
         target.bind();
-        let mut advance = 0;
-        for &ch in line.iter() {
-            let glyph = self.get(ch).unwrap();
 
-            // If it's got a glyph, print it
-            if let Some(tex) = &glyph.tex {
-                // calc viewport
-                let x_min = advance + (glyph.x_min as f32 * scale).floor() as i32;
-                let x_max = advance + (glyph.x_max as f32 * scale).floor() as i32;
+        let mut y = y;
+        for line in text.split(|&byte| byte as char == '\n') {
+            let mut x = x;
+            for &ch in line {
+                let glyph = self.get(ch).expect("character not found");
+                if let Some(tex) = &glyph.tex {
+                    let [w, h] = [glyph.size[0] as f32 * scale, glyph.size[1] as f32 * scale];
 
-                advance += (glyph.h_advance as f32 * scale).floor() as i32;
+                    let xpos = x + glyph.bearing[0] as f32 * scale;
+                    let ypos = y - (glyph.size[1] - glyph.bearing[1]) as f32 * scale;
 
-                let y_min = (glyph.y_min as f32 * scale).floor() as i32;
-                let y_max = (glyph.y_max as f32 * scale).floor() as i32;
+                    log::debug!("rendering {} at ({}, {})", ch as char, xpos, ypos);
+                    /*
+                    target.viewport(
+                        [
+                            x + glyph.bearing[0] as f32 * scale,
+                            y - ((h as i32 - glyph.size[1] + glyph.bearing[1]) as f32 * scale)
+                                as i32,
+                        ],
+                        [
+                            (glyph.h_advance as f32 * scale) as i32,
+                            (h as f32 * scale) as i32,
+                        ],
+                    );
+                    */
 
-                log::debug!(
-                    "drawing glyph {} with viewport {}, {}, {}, {}",
-                    ch as char,
-                    x_min,
-                    y_origin + y_min,
-                    x_max - x_min,
-                    y_max - y_min,
-                );
+                    tex.bind();
+                    Mesh::new(
+                        &[
+                            ([xpos, ypos], [0.0, 1.0]),
+                            ([xpos + w, ypos], [1.0, 1.0]),
+                            ([xpos, ypos - h], [0.0, 0.0]),
+                            ([xpos + w, ypos - h], [1.0, 0.0]),
+                        ],
+                        Usage::StaticDraw,
+                        Topology::TriStrip,
+                    )
+                    .draw();
+                }
 
-                target.viewport([x_min, y_origin + y_min], [x_max - x_min, y_max - y_min]);
-                tex.bind();
-                tex_quad.draw();
+                x += glyph.h_advance as f32 * scale;
             }
-        }
 
-        h
+            y -= self.line_height as f32 * scale
+        }
     }
 }
 
 #[derive(Debug)]
 pub struct Glyph {
-    tex: Option<Texture<[f32; 4]>>,
-    x_min: i16,
-    x_max: i16,
-    y_min: i16,
-    y_max: i16,
-    h_advance: u16,
+    pub tex: Option<Texture<[f32; 4]>>,
+    pub size: [i32; 2],
+    pub bearing: [i32; 2],
+    pub h_advance: u16,
+    y_origin: i16,
 }
 
 struct GlyphBuilder<'a> {
-    face: Face<'a>,
+    face: &'a Face<'a>,
     stencil: Program,
 }
 
 impl<'a> GlyphBuilder<'a> {
-    fn new(face: Face<'a>) -> Self {
+    fn new(face: &'a Face<'a>) -> Self {
         Self {
             face,
             stencil: Program::new(POS2D, WHITE),
@@ -151,8 +136,12 @@ impl<'a> GlyphBuilder<'a> {
                 },
             };
 
-            let w = (x_max - x_min) as i32;
-            let h = (y_max - y_min) as i32;
+            let bearing = [
+                self.face.glyph_hor_side_bearing(idx).unwrap_or(0) as i32,
+                self.face.glyph_ver_side_bearing(idx).unwrap_or(0) as i32,
+            ];
+
+            let size = [(x_max - x_min) as i32, (y_max - y_min) as i32];
 
             // Build meshes
             let verts = outline.splines.iter().fold(
@@ -161,8 +150,8 @@ impl<'a> GlyphBuilder<'a> {
                     points.push([0.0, 0.0]);
                     spline.points().iter().fold(points, |mut points, point| {
                         let point = [
-                            (2.0 * (point[0] - x_min as f32) / w as f32) - 1.0,
-                            (2.0 * (point[1] - y_min as f32) / h as f32) - 1.0,
+                            (2.0 * (point[0] - x_min as f32) / size[0] as f32) - 1.0,
+                            (2.0 * (point[1] - y_min as f32) / size[1] as f32) - 1.0,
                         ];
                         points.push(point);
 
@@ -179,15 +168,15 @@ impl<'a> GlyphBuilder<'a> {
             );
 
             // Prepare render target
-            let tex: Texture<[f32; 4]> = Texture::new(TEX_2D, [w, h]);
-            let stencil: Texture<i32> = Texture::new(TEX_2D, [w, h]);
+            let tex: Texture<[f32; 4]> = Texture::new(TEX_2D, size);
+            let stencil: Texture<i32> = Texture::new(TEX_2D, size);
 
-            let fb = Framebuffer::new(w, h)
-                .with_texture(Attachment::Color0, &tex)
-                .with_texture(Attachment::Stencil, &stencil);
+            let fb = Framebuffer::new();
+            fb.attach(Attachment::Color0, &tex);
+            fb.attach(Attachment::Stencil, &stencil);
 
             fb.bind();
-            fb.viewport([0, 0], [w, h]);
+            fb.viewport([0, 0], size);
             fb.clear_color([0.0, 0.0, 0.0, 0.0]);
 
             self.stencil.bind();
@@ -197,11 +186,10 @@ impl<'a> GlyphBuilder<'a> {
 
             Glyph {
                 tex: Some(tex),
-                x_min,
-                x_max,
-                y_min,
-                y_max,
-                h_advance: self.face.glyph_hor_advance(idx).unwrap(),
+                size,
+                bearing,
+                y_origin: self.face.glyph_y_origin(idx).unwrap_or(0),
+                h_advance: self.face.glyph_hor_advance(idx).unwrap_or(0),
             }
         })
     }

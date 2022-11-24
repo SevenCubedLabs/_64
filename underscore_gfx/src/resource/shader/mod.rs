@@ -1,4 +1,4 @@
-use crate::bindings::*;
+use underscore_64::bindings::*;
 
 pub struct Shader(GLuint);
 
@@ -26,4 +26,10 @@ impl Drop for Shader {
             glDeleteShader(self.0);
         }
     }
+}
+
+macro_rules! shader_src {
+    ($src:literal) => {
+        concat!(include_str!($src), "\0")
+    };
 }

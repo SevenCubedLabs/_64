@@ -7,6 +7,3 @@ edition = "2021"
 
 [dependencies]
 underscore_64 = "0.2.0"
-
-[build-dependencies]
-bindgen = "^0.60"

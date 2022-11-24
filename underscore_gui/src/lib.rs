@@ -3,25 +3,28 @@ pub mod text;
 
 use font::Font;
 use text::Text;
-use underscore_64::data::List;
-use underscore_gfx::{
-    assets::shaders::{POS2D_TEX2D, TEX2D},
-    resource::{program::Program, Resource, Target},
+use underscore_64::{data::List, math::ortho};
+use underscore_gfx::resource::{
+    mesh::{Mesh, Topology, Usage},
+    program::Program,
+    Resource, Target, Uniform,
 };
 
 pub type FontId = usize;
-pub type TextView = underscore_gfx::resource::texture::TextureRgba;
 
 pub struct TextSystem {
     fonts: List<Font>,
     program: Program,
 }
 
+static TEXT_VERT: &str = concat!(include_str!("shaders/text.vert"), "\0");
+static TEXT_FRAG: &str = concat!(include_str!("shaders/text.frag"), "\0");
+
 impl TextSystem {
     pub fn new() -> Self {
         Self {
             fonts: List::new(1),
-            program: Program::new(POS2D_TEX2D, TEX2D),
+            program: Program::new(TEXT_VERT, TEXT_FRAG),
         }
     }
 
@@ -31,22 +34,76 @@ impl TextSystem {
         Ok(self.fonts.len() - 1)
     }
 
-    pub fn render(&self, font: FontId, text: &mut Text) {
+    pub fn draw(&self, text: &Text, font: FontId, em: f32) {
         log::debug!("rendering {:?}", text);
         self.program.bind();
 
+        text.buf.bind();
+        text.buf.viewport([0, 0], [text.w, text.h]);
         text.buf.clear_color([0.0, 0.0, 0.0, 1.0]);
 
-        let mut h = text.h;
-        let ch_width = text.w / text.columns;
-        for line in text.lines.iter() {
-            log::debug!("drawing line: {}", unsafe {
-                core::str::from_utf8_unchecked(line)
-            });
+        ortho([0.0, 0.0], [text.w as f32, text.h as f32]).bind(0);
 
-            h -= (1.3
-                * self.fonts[font].draw(line, line.len() as i32 * ch_width, h, &text.buf) as f32)
-                as i32;
+        let font = &self.fonts[font];
+        let scale = em * font.pixels_per_unit;
+
+        let mut y = text.h as f32;
+        for line in text.text.split(|&byte| byte as char == '\n') {
+            y -= font.line_height as f32 * scale;
+
+            let mut x = 0.0;
+            for &ch in line {
+                let glyph = font.get(ch).expect("character not found");
+                if let Some(tex) = &glyph.tex {
+                    let [w, h] = [glyph.size[0] as f32 * scale, glyph.size[1] as f32 * scale];
+                    let [dx, dy] = [
+                        glyph.bearing[0] as f32 * scale,
+                        glyph.bearing[1] as f32 * scale,
+                    ];
+
+                    let left = x + dx;
+                    let right = left + w;
+                    let bottom = y + dy;
+                    let top = bottom + h;
+
+                    log::debug!(
+                        "rendering {} with bottom left ({}, {}) and top right ({}, {})",
+                        ch as char,
+                        left,
+                        bottom,
+                        right,
+                        top
+                    );
+                    /*
+                    target.viewport(
+                        [
+                            x + glyph.bearing[0] as f32 * scale,
+                            y - ((h as i32 - glyph.size[1] + glyph.bearing[1]) as f32 * scale)
+                                as i32,
+                        ],
+                        [
+                            (glyph.h_advance as f32 * scale) as i32,
+                            (h as f32 * scale) as i32,
+                        ],
+                    );
+                    */
+
+                    tex.bind();
+                    Mesh::new(
+                        &[
+                            ([left, top], [0.0, 1.0]),
+                            ([right, top], [1.0, 1.0]),
+                            ([left, bottom], [0.0, 0.0]),
+                            ([right, bottom], [1.0, 0.0]),
+                        ],
+                        Usage::StaticDraw,
+                        Topology::TriStrip,
+                    )
+                    .draw();
+                }
+
+                x += glyph.h_advance as f32 * scale;
+            }
         }
     }
 }

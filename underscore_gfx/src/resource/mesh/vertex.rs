@@ -1,5 +1,5 @@
-use crate::bindings::*;
 use core::mem::size_of;
+use underscore_64::bindings::*;
 
 pub trait Vertex: Sized {
     const NUM: i32 = 0;

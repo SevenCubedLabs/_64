@@ -1,6 +1,6 @@
-use crate::bindings::*;
 use crate::resource::Resource;
 use core::mem::size_of;
+use underscore_64::bindings::*;
 
 pub struct Buffer {
     _type: GLenum,

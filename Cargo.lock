@@ -322,6 +322,7 @@ checksum = "7b3e06c9b9d80ed6b745c7159c40b311ad2916abb34a49e9be2653b90db0d8dd"
 name = "underscore_64"
 version = "0.2.0"
 dependencies = [
+ "bindgen",
  "log",
 ]
 
@@ -329,7 +330,6 @@ dependencies = [
 name = "underscore_gfx"
 version = "0.1.0"
 dependencies = [
- "bindgen",
  "underscore_64",
 ]
 

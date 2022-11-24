@@ -1,8 +1,8 @@
-use crate::bindings::*;
 use crate::{
     resource::{Resource, Target},
     GfxSystem,
 };
+use underscore_64::bindings::*;
 
 pub struct Window {
     window: *mut SDL_Window,
