@@ -101,7 +101,6 @@ pub struct Glyph {
     pub size: [i32; 2],
     pub bearing: [i32; 2],
     pub h_advance: u16,
-    y_origin: i16,
 }
 
 struct GlyphBuilder<'a> {
@@ -188,7 +187,6 @@ impl<'a> GlyphBuilder<'a> {
                 tex: Some(tex),
                 size,
                 bearing,
-                y_origin: self.face.glyph_y_origin(idx).unwrap_or(0),
                 h_advance: self.face.glyph_hor_advance(idx).unwrap_or(0),
             }
         })

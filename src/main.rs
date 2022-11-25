@@ -38,7 +38,7 @@ use underscore_gfx::{
     },
     Resource, Target,
 };
-use underscore_gui::TextSystem;
+use underscore_gui::text::TextSystem;
 use underscore_sdl::{
     event::{Event, EventFeed},
     window::Window,
@@ -73,9 +73,9 @@ pub fn main() {
 
     let text = TextSystem::default();
 
-    let mut greets = underscore_gui::text::Text::new(120, [1920, 1080]);
+    let mut greets = underscore_gui::text::Text::new([1920, 1080]);
     greets.update("hello\nworld");
-    text.draw(&greets, 0, 10.0);
+    text.draw(&greets, [1920, 1080], 0, 10.0);
 
     let tex_quad = Mesh::new(
         &[

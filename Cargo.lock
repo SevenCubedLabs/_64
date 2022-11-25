@@ -324,6 +324,7 @@ name = "underscore_64"
 version = "0.2.0"
 dependencies = [
  "log",
+ "underscore_sys",
 ]
 
 [[package]]

@@ -1,10 +1,6 @@
 use core::mem::size_of;
+use underscore_sys::*;
 
-extern "C" {
-    fn malloc(_: usize) -> *const core::ffi::c_void;
-    fn free(_: *const core::ffi::c_void);
-    fn memcpy(src: *const core::ffi::c_void, dest: *const core::ffi::c_void, len: usize);
-}
 #[derive(Debug, Clone)]
 pub struct List<Item: Sized> {
     data: *mut Item,

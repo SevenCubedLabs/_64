@@ -3,7 +3,6 @@ use underscore_sys::*;
 
 pub struct Window {
     window: *mut SDL_Window,
-    size: [i32; 2],
     ctx: SDL_GLContext,
 }
 
@@ -27,7 +26,6 @@ impl Window {
 
                 Ok(Self {
                     window,
-                    size: [w, h],
                     ctx: SDL_GL_CreateContext(window),
                 })
             } else {
