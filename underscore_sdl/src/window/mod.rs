@@ -1,13 +1,10 @@
-use crate::{
-    resource::{Resource, Target},
-    GfxSystem,
-};
-use underscore_64::bindings::*;
+use underscore_gfx::{Resource, Target};
+use underscore_sys::*;
 
 pub struct Window {
     window: *mut SDL_Window,
-    pub(crate) w: i32,
-    pub(crate) h: i32,
+    size: [i32; 2],
+    ctx: SDL_GLContext,
 }
 
 impl Window {
@@ -25,20 +22,18 @@ impl Window {
             );
 
             if !window.is_null() {
-                Ok(Self { window, w, h })
+                SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+                SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+
+                Ok(Self {
+                    window,
+                    size: [w, h],
+                    ctx: SDL_GL_CreateContext(window),
+                })
             } else {
                 SDL_QuitSubSystem(SDL_INIT_VIDEO);
                 Err(())
             }
-        }
-    }
-
-    pub fn context(&self) -> GfxSystem {
-        unsafe {
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-
-            GfxSystem::new(self.window)
         }
     }
 
@@ -52,6 +47,7 @@ impl Window {
 impl Drop for Window {
     fn drop(&mut self) {
         unsafe {
+            SDL_GL_DeleteContext(self.ctx as _);
             SDL_QuitSubSystem(SDL_INIT_VIDEO);
         }
     }
@@ -61,7 +57,6 @@ impl Resource for Window {
     fn bind(&self) {
         unsafe {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            glViewport(0, 0, self.w, self.h);
         }
     }
 }

@@ -1,14 +1,7 @@
-use crate::font::Font;
 use underscore_64::data::List;
-use underscore_gfx::{
-    assets::shaders::{POS2D_TEX2D, TEX2D},
-    resource::{
-        framebuffer::{Attachment, Framebuffer},
-        mesh::{Mesh, Topology, Usage},
-        program::Program,
-        texture::{Texture, TextureRgba, TEX_2D},
-        Resource, Target,
-    },
+use underscore_gfx::resource::{
+    framebuffer::{Attachment, Framebuffer},
+    texture::{Texture, TextureRgba, TEX_2D},
 };
 
 pub type TextView = underscore_gfx::resource::texture::TextureRgba;

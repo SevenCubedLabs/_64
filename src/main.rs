@@ -31,16 +31,18 @@ const HEIGHT: i32 = 1080;
 
 use underscore_64::log;
 use underscore_gfx::{
-    assets::shaders::{POS2D_TEX2D, TEX2D},
     resource::{
         mesh::{Mesh, Topology, Usage},
         program::Program,
-        window::Window,
-        Resource, Target,
+        shader::{POS2D_TEX2D, TEX2D},
     },
+    Resource, Target,
 };
 use underscore_gui::TextSystem;
-use underscore_sdl::{Event, EventFeed};
+use underscore_sdl::{
+    event::{Event, EventFeed},
+    window::Window,
+};
 
 use log::{Level, LevelFilter, Metadata, Record};
 
@@ -68,7 +70,6 @@ pub fn main() {
         .expect("failed to init logs");
     log::info!("---BEGIN LOG---");
     let window = Window::new(NAME.as_ptr(), 1920, 1080).expect("window creation failed");
-    let _context = window.context();
 
     let text = TextSystem::default();
 

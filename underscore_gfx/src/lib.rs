@@ -1,22 +1,41 @@
-pub mod assets;
 pub mod resource;
 
-#[macro_use]
-extern crate underscore_64;
-use underscore_64::bindings::*;
+use underscore_64::{math::Matrix, log};
+use underscore_sys::*;
 
-pub struct GfxSystem(SDL_GLContext);
+pub trait Resource {
+    fn bind(&self);
+}
 
-impl GfxSystem {
-    pub fn new(window: *mut SDL_Window) -> Self {
-        unsafe { GfxSystem(SDL_GL_CreateContext(window)) }
+pub trait Target: Resource {
+    fn clear_color(&self, [r, g, b, a]: [f32; 4]) {
+        unsafe {
+            glClearColor(r, g, b, a);
+        }
+    }
+
+    fn clear_stencil(&self, clear: i32) {
+        unsafe {
+            glClearStencil(clear);
+        }
+    }
+
+    fn viewport(&self, [x, y]: [i32; 2], [w, h]: [i32; 2]) {
+        log::debug!("setting viewport: [{}, {}], [{}, {}]", x, y, w, h);
+        unsafe {
+            glViewport(x, y, w, h);
+        }
     }
 }
 
-impl Drop for GfxSystem {
-    fn drop(&mut self) {
+pub trait Uniform {
+    fn bind(&self, location: i32);
+}
+
+impl Uniform for Matrix<4, 4> {
+    fn bind(&self, location: i32) {
         unsafe {
-            SDL_GL_DeleteContext(self.0 as _);
+            glUniformMatrix4fv(location, 1, GL_FALSE as _, self.as_ptr() as _);
         }
     }
 }

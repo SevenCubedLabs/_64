@@ -1,9 +1,9 @@
-use crate::resource::{
-    texture::{Format, Texture},
+use crate::{
+    resource::texture::{Format, Texture},
     Resource, Target,
 };
-use underscore_64::bindings::*;
 use underscore_64::log;
+use underscore_sys::*;
 
 #[derive(Debug)]
 pub struct Framebuffer(GLuint);

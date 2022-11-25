@@ -4,7 +4,7 @@ fn main() {
     println!("cargo:rustc-link-lib=SDL2");
     println!("cargo:rustc-link-lib=GL");
 
-    let bindings = bindgen::builder()
+    let underscore_sys = bindgen::builder()
         .prepend_enum_name(false)
         .derive_debug(false)
         .derive_eq(false)
@@ -12,12 +12,12 @@ fn main() {
         .clang_arg("-I/usr/include/SDL2/")
         .blocklist_item("FP_.*")
         .use_core()
-        .ctypes_prefix("crate::bindings::c_types")
+        .ctypes_prefix("crate::underscore_sys::c_types")
         .generate()
         .unwrap();
 
     let out_path = std::path::PathBuf::from(std::env::var("OUT_DIR").unwrap());
-    bindings
-        .write_to_file(out_path.join("bindings.rs"))
-        .expect("Couldn't write bindings!");
+    underscore_sys
+        .write_to_file(out_path.join("underscore_sys.rs"))
+        .expect("Couldn't write underscore_sys!");
 }

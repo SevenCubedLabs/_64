@@ -1,15 +1,15 @@
 use ttf_parser::{Face, FaceParsingError, OutlineBuilder, Rect};
-use underscore_64::{data::List, math::Spline};
+use underscore_64::{data::List, log, math::Spline};
 use underscore_gfx::{
-    assets::shaders::{POS2D, WHITE},
     resource::{
         buffer::Usage,
         framebuffer::{Attachment, Framebuffer},
         mesh::{Mesh, Topology},
         program::Program,
+        shader::{POS2D, WHITE},
         texture::{Texture, TEX_2D},
-        Resource, Target,
     },
+    Resource, Target,
 };
 
 const PIXELS_PER_EM: f32 = 16.0;

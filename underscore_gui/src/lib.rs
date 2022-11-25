@@ -3,10 +3,12 @@ pub mod text;
 
 use font::Font;
 use text::Text;
-use underscore_64::{data::List, math::ortho};
-use underscore_gfx::resource::{
-    mesh::{Mesh, Topology, Usage},
-    program::Program,
+use underscore_64::{data::List, log, math::ortho};
+use underscore_gfx::{
+    resource::{
+        mesh::{Mesh, Topology, Usage},
+        program::Program,
+    },
     Resource, Target, Uniform,
 };
 
