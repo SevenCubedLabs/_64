@@ -1,0 +1,10 @@
+[package]
+name = "underscore_gfx"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+underscore_64 = "^0.2.0"
+underscore_sys = "^0.1.0"

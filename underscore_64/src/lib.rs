@@ -1,9 +1,6 @@
 #![no_std]
 #![feature(core_intrinsics)]
 
-pub mod assets;
-mod data;
-pub mod event;
+pub use log;
+pub mod data;
 pub mod math;
-pub mod render;
-pub mod window;

@@ -1,15 +1,15 @@
 use underscore_64::{
-    assets::shaders::{POS2D_RGB, RGB},
     event::{Event, EventFeed},
     render::{
         clear,
         mesh::{Mesh, Topology},
         program::Program,
+        shaders::{POS2D_RGB, RGB},
+        window::Window,
     },
-    window::Window,
 };
 
-const NAME: &str = "_64 triangle\0";
+const NAME: &str = "_64-triangle\0";
 
 pub fn main() {
     let window = Window::new(NAME.as_ptr(), 1920, 1080).expect("test");
@@ -24,7 +24,7 @@ pub fn main() {
             ([1.0, -1.0], [0.0, 1.0, 0.0]),
             ([-1.0, -1.0], [0.0, 0.0, 1.0]),
         ],
-        Topology::idx_triangles(&[0, 1, 2]),
+        Topology::from_indices(&[0, 1, 2]),
     );
 
     let mut events = EventFeed;

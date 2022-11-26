@@ -7,14 +7,21 @@ authors = ["Zeno <zeno@sevencubed.tech>"]
 edition = "2018"
 
 [workspace]
-members = ["underscore_64", "underscore_64/underscore_sys"]
+members = ["underscore_sys", "underscore_sdl", "underscore_gui", "underscore_gfx", "underscore_64"]
 
 [dependencies]
 underscore_64 = "^0.2.0"
+underscore_gfx = "^0.1.0"
+underscore_gui = "^0.1.0"
+underscore_sdl = "^0.1.0"
+underscore_sys = "^0.1.1"
 
 [patch.crates-io]
-underscore_sys = { path = "underscore_64/underscore_sys" }
 underscore_64 = { path = "underscore_64" }
+underscore_gfx = { path = "underscore_gfx" }
+underscore_gui = { path = "underscore_gui" }
+underscore_sdl = { path = "underscore_sdl" }
+underscore_sys = { path = "underscore_sys" }
 
 [features]
 minsize = []
