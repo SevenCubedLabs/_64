@@ -163,6 +163,7 @@ impl<'a> GlyphBuilder<'a> {
                 },
             );
 
+            log::debug!("calculated glyph vertices: {:?}", verts);
             let glyph = Mesh::new(&verts, Usage::StaticDraw, Topology::TriFan);
             let quad = Mesh::new(
                 &[[-1.0, 1.0], [1.0, 1.0], [-1.0, -1.0], [1.0, -1.0]],

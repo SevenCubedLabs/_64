@@ -7,12 +7,12 @@ pub struct Window {
 }
 
 impl Window {
-    pub fn new(name: *const u8, w: i32, h: i32) -> Result<Self, ()> {
+    pub fn new(name: &[u8], w: i32, h: i32) -> Result<Self, ()> {
         unsafe {
             SDL_InitSubSystem(SDL_INIT_VIDEO);
 
             let window = SDL_CreateWindow(
-                name as _,
+                name.as_ptr() as *const i8,
                 SDL_WINDOWPOS_UNDEFINED_MASK as _,
                 SDL_WINDOWPOS_UNDEFINED_MASK as _,
                 w,

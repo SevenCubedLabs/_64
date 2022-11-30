@@ -19,7 +19,7 @@ underscore_gfx = "^0.1.0"
 underscore_gui = "^0.1.0"
 underscore_sdl = "^0.1.0"
 underscore_sys = "^0.1.1"
-log = { version = "^0.4", optional = true }
+log = { version = "^0.4", optional = true, default-features = false }
 
 [patch.crates-io]
 underscore_core = { path = "underscore_core" }
@@ -29,12 +29,19 @@ underscore_sdl = { path = "underscore_sdl" }
 underscore_sys = { path = "underscore_sys" }
 
 [build-dependencies]
-ttf-parser = { version = "^0.15", optional = true }
+ttf-parser = { version = "^0.15", optional = true, default-features = true }
 
 [features]
-edit = ["underscore_core/default_alloc", "underscore_core/default_vec", "log", "ttf-parser"]
+edit = ["std", "log", "ttf-parser"]
+log = ["std", "dep:log"]
+std = ["underscore_core/default_alloc", "underscore_core/default_vec"]
 
 [profile.release]
 panic = "abort"
 lto = true
+incremental = true
 opt-level = "z"
+
+[profile.dev]
+panic = "abort"
+incremental = true

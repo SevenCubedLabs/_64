@@ -12,7 +12,7 @@ fn main() {
         .header("bindings.h")
         .blocklist_item("FP_.*")
         .use_core()
-        .ctypes_prefix("crate::underscore_sys::c_types")
+        .ctypes_prefix("crate::c_types")
         .generate()
         .unwrap();
 

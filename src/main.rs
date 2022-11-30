@@ -1,22 +1,22 @@
 #![cfg_attr(
-    not(feature = "edit"),
+    not(feature = "std"),
     no_std,
     no_main,
     feature(lang_items),
     feature(naked_functions)
 )]
 
-#[cfg(not(feature = "edit"))]
+#[cfg(not(feature = "std"))]
 #[lang = "eh_personality"]
 fn eh_personality() {}
 
-#[cfg(not(feature = "edit"))]
+#[cfg(not(feature = "std"))]
 #[panic_handler]
 fn panic(_info: &core::panic::PanicInfo) -> ! {
     loop {}
 }
 
-#[cfg(not(feature = "edit"))]
+#[cfg(not(feature = "std"))]
 #[no_mangle]
 #[naked]
 pub unsafe extern "C" fn _start() {
@@ -25,10 +25,11 @@ pub unsafe extern "C" fn _start() {
     asm!("mov rdi, rsp", "call main", options(noreturn))
 }
 
-const NAME: &str = "_64\0";
+static NAME: &[u8] = c_str!("_64");
 const WIDTH: i32 = 1920;
 const HEIGHT: i32 = 1080;
 
+use underscore_64::c_str;
 use underscore_gfx::{
     resource::{
         mesh::{Mesh, Topology, Usage},
@@ -45,7 +46,8 @@ use underscore_sdl::{
 
 #[cfg(feature = "log")]
 mod simple_log {
-    use log::{Level, LevelFilter, Metadata, Record};
+    pub use log::{set_max_level, LevelFilter};
+    use log::{Level, Metadata, Record};
 
     struct SimpleLogger;
     static LOGGER: SimpleLogger = SimpleLogger;
@@ -72,11 +74,12 @@ mod simple_log {
     }
 }
 
-#[cfg_attr(not(feature = "edit"), no_mangle)]
+#[cfg_attr(not(feature = "std"), no_mangle)]
 pub fn main() {
     #[cfg(feature = "log")]
     simple_log::init();
-    let window = Window::new(NAME.as_ptr(), 1920, 1080).expect("window creation failed");
+
+    let window = Window::new(NAME, 1920, 1080).expect("window creation failed");
 
     let text = TextSystem::default();
 
@@ -101,6 +104,9 @@ pub fn main() {
     let mut events = EventFeed;
     events.text_input(true);
 
+    #[cfg(feature = "log")]
+    simple_log::set_max_level(simple_log::LevelFilter::Off);
+
     loop {
         match events.next() {
             Some(event) => match event {
@@ -122,7 +128,7 @@ pub fn main() {
         window.swap();
     }
 
-    #[cfg(not(feature = "edit"))]
+    #[cfg(not(feature = "std"))]
     unsafe {
         underscore_sys::exit(0);
     }

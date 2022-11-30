@@ -1,13 +1,12 @@
 #![no_std]
 #![feature(core_intrinsics)]
 
+pub mod alloc;
 pub mod math;
-pub mod alloc {
-    #[cfg(feature = "default_alloc")]
-    extern crate alloc;
-    #[cfg(feature = "default_alloc")]
-    pub use alloc::*;
 
-    #[cfg(not(feature = "default_vec"))]
-    pub mod vec;
+#[macro_export]
+macro_rules! c_str {
+    ($exp: expr) => {
+        concat!($exp, "\0").as_ptr() as *const u8
+    };
 }

@@ -39,6 +39,10 @@ impl<V: Vertex> Mesh<V> {
         }
     }
 
+    pub fn static_draw(verts: &[V], topology: Topology) -> Self {
+        Self::new(verts, Usage::StaticDraw, topology)
+    }
+
     pub fn update(&mut self, verts: &[V]) {
         self.vertices.update(verts);
     }

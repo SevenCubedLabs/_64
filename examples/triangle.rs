@@ -1,19 +1,20 @@
 use underscore_64::{
-    event::{Event, EventFeed},
-    render::{
-        clear,
-        mesh::{Mesh, Topology},
+    gfx::{
+        mesh::{Mesh, Topology, Usage},
         program::Program,
-        shaders::{POS2D_RGB, RGB},
+        shader::{POS2D_RGB, RGB},
+        Resource, Target,
+    },
+    sdl::{
+        event::{Event, EventFeed},
         window::Window,
     },
 };
 
-const NAME: &str = "_64-triangle\0";
+const NAME: &str = "_64-triangle";
 
 pub fn main() {
-    let window = Window::new(NAME.as_ptr(), 1920, 1080).expect("test");
-    let _context = window.context();
+    let window = Window::new(NAME.as_ptr(), 1920, 1080).expect("failed to open sdl2 window");
 
     let program = Program::new(POS2D_RGB, RGB);
     program.bind();
@@ -24,7 +25,8 @@ pub fn main() {
             ([1.0, -1.0], [0.0, 1.0, 0.0]),
             ([-1.0, -1.0], [0.0, 0.0, 1.0]),
         ],
-        Topology::from_indices(&[0, 1, 2]),
+        Usage::StaticDraw,
+        Topology::from_indices(&[0, 1, 2], Usage::StaticDraw),
     );
 
     let mut events = EventFeed;
@@ -39,7 +41,7 @@ pub fn main() {
             },
 
             None => {
-                clear([0.0, 0.0, 0.0, 1.0]);
+                window.clear_color([0.0, 0.0, 0.0, 1.0]);
                 program.bind();
                 mesh.draw();
                 window.swap();

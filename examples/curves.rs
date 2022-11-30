@@ -1,20 +1,21 @@
 use underscore_64::{
-    event::{Event, EventFeed},
-    math::{sin, Curve},
-    render::{
-        clear,
+    gfx::{
         mesh::{Mesh, Topology},
         program::Program,
-        shaders::{POS2D, WHITE},
+        shader::{POS2D, WHITE},
+        Resource, Target,
+    },
+    math::{sin, Curve},
+    sdl::{
+        event::{Event, EventFeed},
         window::Window,
     },
 };
 
-const NAME: &str = "_64-curves\0";
+const NAME: &str = "_64-curves";
 
 pub fn main() {
     let window = Window::new(NAME.as_ptr(), 1920, 1080).expect("test");
-    let _context = window.context();
 
     let program = Program::new(POS2D, WHITE);
     program.bind();
@@ -22,7 +23,7 @@ pub fn main() {
     let new_sin = |x: f32| sin(x * 6.28);
     let sin_plot = new_sin.plot(-1.0, 1.0, 100);
 
-    let mesh = Mesh::new(&sin_plot, Topology::Points);
+    let mesh = Mesh::static_draw(&sin_plot, Topology::Lines);
 
     let mut events = EventFeed;
     loop {
@@ -36,7 +37,7 @@ pub fn main() {
             },
 
             None => {
-                clear([0.0, 0.0, 0.0, 1.0]);
+                window.clear_color([0.0, 0.0, 0.0, 1.0]);
                 program.bind();
                 mesh.draw();
                 window.swap();

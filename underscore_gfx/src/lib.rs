@@ -1,6 +1,8 @@
 #![no_std]
 pub mod resource;
 
+pub use resource::*;
+
 use log;
 use underscore_core::{math::Matrix};
 use underscore_sys::*;
