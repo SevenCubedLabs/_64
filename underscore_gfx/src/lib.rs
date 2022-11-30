@@ -1,6 +1,8 @@
+#![no_std]
 pub mod resource;
 
-use underscore_64::{math::Matrix, log};
+use log;
+use underscore_core::{math::Matrix};
 use underscore_sys::*;
 
 pub trait Resource {

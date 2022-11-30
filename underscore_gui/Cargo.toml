@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-underscore_64 = "^0.2.0"
+underscore_core = "^0.1.0"
 underscore_gfx = "^0.1.0"
-underscore_sys = "^0.1.0"
-ttf-parser = "^0.15"
+underscore_sys = "^0.1.1"
+ttf-parser = { version = "^0.15", default-features = false }
+log = { version = "^0.4", default-features = false }

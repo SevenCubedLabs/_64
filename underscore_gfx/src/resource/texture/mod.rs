@@ -1,6 +1,5 @@
 use crate::Resource;
 use core::marker::PhantomData;
-use underscore_64::log;
 use underscore_sys::*;
 
 pub type TextureRgb = Texture<[f32; 3]>;

@@ -2,7 +2,6 @@ use crate::{
     resource::texture::{Format, Texture},
     Resource, Target,
 };
-use underscore_64::log;
 use underscore_sys::*;
 
 #[derive(Debug)]

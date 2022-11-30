@@ -1,5 +1,9 @@
+use log;
 use ttf_parser::{Face, FaceParsingError, OutlineBuilder, Rect};
-use underscore_64::{data::List, log, math::Spline};
+use underscore_core::{
+    alloc::vec::Vec,
+    math::{Points, Spline},
+};
 use underscore_gfx::{
     resource::{
         buffer::Usage,
@@ -16,14 +20,14 @@ const PIXELS_PER_EM: f32 = 16.0;
 
 #[derive(Debug)]
 pub struct Font {
-    glyphs: List<Option<Glyph>>,
+    glyphs: Vec<Option<Glyph>>,
     pub pixels_per_unit: f32,
     pub line_height: i16,
 }
 
 impl Font {
     pub fn new(file: &[u8]) -> Result<Self, FaceParsingError> {
-        let mut glyphs = List::new(128);
+        let mut glyphs = Vec::with_capacity(128);
 
         let face = Face::from_slice(file, 0)?;
         let builder = GlyphBuilder::new(&face);
@@ -40,7 +44,7 @@ impl Font {
     }
 
     pub fn get(&self, idx: u8) -> Option<&Glyph> {
-        self.glyphs[idx as _].as_ref()
+        self.glyphs[idx as usize].as_ref()
     }
 
     pub fn draw(&self, text: &[u8], [x, y]: [f32; 2], em: f32, target: &impl Target) {
@@ -144,7 +148,7 @@ impl<'a> GlyphBuilder<'a> {
 
             // Build meshes
             let verts = outline.splines.iter().fold(
-                List::new(outline.splines.len() * 100 + 1),
+                Vec::with_capacity(outline.splines.len() * 100 + 1),
                 |mut points, spline| {
                     points.push([0.0, 0.0]);
                     spline.points().iter().fold(points, |mut points, point| {
@@ -194,14 +198,14 @@ impl<'a> GlyphBuilder<'a> {
 }
 
 struct SplineBuilder {
-    splines: List<Spline>,
+    splines: Vec<Spline>,
     head: [f32; 2],
 }
 
 impl SplineBuilder {
     fn new() -> Self {
         Self {
-            splines: List::new(1),
+            splines: Vec::with_capacity(1),
             head: [0.0; 2],
         }
     }
@@ -209,28 +213,25 @@ impl SplineBuilder {
 
 impl OutlineBuilder for SplineBuilder {
     fn move_to(&mut self, x: f32, y: f32) {
-        self.splines.push(Spline::new(1));
+        self.splines.push(Spline::with_capacity(1));
         self.head = [x, y];
     }
 
     fn line_to(&mut self, x: f32, y: f32) {
-        self.splines
-            .tail_mut()
-            .push([self.head, [x, y]].as_slice().into());
+        let idx = self.splines.len() - 1;
+        self.splines[idx].push([self.head, [x, y]].as_slice().into());
         self.head = [x, y];
     }
 
     fn quad_to(&mut self, x1: f32, y1: f32, x: f32, y: f32) {
-        self.splines
-            .tail_mut()
-            .push([self.head, [x1, y1], [x, y]].as_slice().into());
+        let idx = self.splines.len() - 1;
+        self.splines[idx].push([self.head, [x1, y1], [x, y]].as_slice().into());
         self.head = [x, y];
     }
 
     fn curve_to(&mut self, x1: f32, y1: f32, x2: f32, y2: f32, x: f32, y: f32) {
-        self.splines
-            .tail_mut()
-            .push([self.head, [x1, y1], [x2, y2], [x, y]].as_slice().into());
+        let idx = self.splines.len() - 1;
+        self.splines[idx].push([self.head, [x1, y1], [x2, y2], [x, y]].as_slice().into());
         self.head = [x, y];
     }
 

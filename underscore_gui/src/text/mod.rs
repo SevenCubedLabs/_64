@@ -1,7 +1,9 @@
 pub mod font;
 
 use font::Font;
-use underscore_64::{data::List, log, math::ortho};
+use log;
+use ttf_parser::FaceParsingError;
+use underscore_core::{alloc::vec::Vec, math::ortho};
 use underscore_gfx::{
     resource::{
         framebuffer::{Attachment, Framebuffer},
@@ -15,7 +17,7 @@ use underscore_gfx::{
 pub type FontId = usize;
 
 pub struct TextSystem {
-    fonts: List<Font>,
+    fonts: Vec<Font>,
     program: Program,
 }
 
@@ -25,13 +27,13 @@ static TEXT_FRAG: &str = concat!(include_str!("shaders/text.frag"), "\0");
 impl TextSystem {
     pub fn new() -> Self {
         Self {
-            fonts: List::new(1),
+            fonts: Vec::with_capacity(1),
             program: Program::new(TEXT_VERT, TEXT_FRAG),
         }
     }
 
-    pub fn load_font(&mut self, file: &[u8]) -> Result<FontId, String> {
-        let new_glyphs = Font::new(file).map_err(|e| e.to_string())?;
+    pub fn load_font(&mut self, file: &[u8]) -> Result<FontId, FaceParsingError> {
+        let new_glyphs = Font::new(file)?;
         self.fonts.push(new_glyphs);
         Ok(self.fonts.len() - 1)
     }
@@ -109,7 +111,7 @@ impl Default for TextSystem {
 
 #[derive(Debug)]
 pub struct Text {
-    text: List<u8>,
+    text: Vec<u8>,
     tex: TextureRgba,
     buf: Framebuffer,
 }
@@ -121,7 +123,7 @@ impl Text {
         buf.attach(Attachment::Color0, &tex);
 
         Self {
-            text: List::new(1),
+            text: Vec::with_capacity(1),
             tex,
             buf,
         }
