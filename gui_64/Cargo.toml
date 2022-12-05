@@ -1,0 +1,10 @@
+[package]
+name = "gui_64"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+base_64 = "^0.1.0"
+gfx_64 = "^0.1.0"
+ttf-parser = { version = "^0.15", default-features = false }
+log = { version = "^0.4", default-features = false }

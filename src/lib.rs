@@ -1,8 +1,7 @@
 #![no_std]
-pub use underscore_core::math;
-pub use underscore_gfx as gfx;
-pub use underscore_gui as gui;
-pub use underscore_sdl as sdl;
+pub use base_64::math;
+pub use gfx_64 as gfx;
+pub use gui_64 as gui;
 
 #[macro_export]
 macro_rules! c_str {

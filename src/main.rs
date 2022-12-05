@@ -29,20 +29,20 @@ static NAME: &[u8] = c_str!("_64");
 const WIDTH: i32 = 1920;
 const HEIGHT: i32 = 1080;
 
-use underscore_64::c_str;
-use underscore_gfx::{
+use gfx_64::{
     resource::{
         mesh::{Mesh, Topology, Usage},
         program::Program,
         shader::{POS2D_TEX2D, TEX2D},
     },
-    Resource, Target,
+    GfxSystem, Resource, Target,
 };
-use underscore_gui::text::TextSystem;
-use underscore_sdl::{
+use gui_64::text::TextSystem;
+use sdl_64::{
     event::{Event, EventFeed},
     window::Window,
 };
+use underscore_64::c_str;
 
 #[cfg(feature = "log")]
 mod simple_log {
@@ -83,7 +83,7 @@ pub fn main() {
 
     let text = TextSystem::default();
 
-    let mut greets = underscore_gui::text::Text::new([1920, 1080]);
+    let mut greets = gui_64::text::Text::new([1920, 1080]);
     greets.update("hello\nworld");
     text.draw(&greets, [1920, 1080], 0, 10.0);
 
@@ -130,6 +130,6 @@ pub fn main() {
 
     #[cfg(not(feature = "std"))]
     unsafe {
-        underscore_sys::exit(0);
+        base_64::exit(0);
     }
 }

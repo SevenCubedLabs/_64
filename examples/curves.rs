@@ -1,4 +1,5 @@
 use underscore_64::{
+    c_str,
     gfx::{
         mesh::{Mesh, Topology},
         program::Program,
@@ -12,10 +13,10 @@ use underscore_64::{
     },
 };
 
-const NAME: &str = "_64-curves";
+static NAME: &[u8] = c_str!("_64-triangle");
 
 pub fn main() {
-    let window = Window::new(NAME.as_ptr(), 1920, 1080).expect("test");
+    let window = Window::new(NAME, 1920, 1080).expect("test");
 
     let program = Program::new(POS2D, WHITE);
     program.bind();

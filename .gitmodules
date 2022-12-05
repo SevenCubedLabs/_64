@@ -4,3 +4,6 @@
 [submodule "onekpaq"]
 	path = onekpaq
 	url = git@github.com:porocyon/onekpaq
+[submodule "./gfx_64/gl_64"]
+	path = gfx_64/gl_64
+	url = git@github.com:Zeno343/gl_64.git

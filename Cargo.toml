@@ -1,7 +1,7 @@
 [package]
 name = "underscore_64"
 description = "A minsize-oriented graphics engine"
-version = "0.2.0"
+version = "0.1.0"
 license = "MIT"
 authors = ["Zeno <zeno@sevencubed.tech>"]
 edition = "2018"
@@ -11,22 +11,20 @@ name = "_64"
 path = "src/main.rs"
 
 [workspace]
-members = ["underscore_sys", "underscore_sdl", "underscore_gui", "underscore_gfx", "underscore_core"]
+members = ["gui_64", "gfx_64", "base_64"]
 
 [dependencies]
-underscore_core = "^0.1.0"
-underscore_gfx = "^0.1.0"
-underscore_gui = "^0.1.0"
-underscore_sdl = "^0.1.0"
-underscore_sys = "^0.1.1"
+base_64 = "^0.1.0"
+gfx_64 = "^0.1.0"
+gui_64 = "^0.1.0"
+sdl_64 = "^0.1.0"
 log = { version = "^0.4", optional = true, default-features = false }
 
 [patch.crates-io]
-underscore_core = { path = "underscore_core" }
-underscore_gfx = { path = "underscore_gfx" }
-underscore_gui = { path = "underscore_gui" }
-underscore_sdl = { path = "underscore_sdl" }
-underscore_sys = { path = "underscore_sys" }
+base_64 = { path = "base_64" }
+gfx_64 = { path = "gfx_64" }
+gui_64 = { path = "gui_64" }
+sdl_64 = { path = "sdl_64" }
 
 [build-dependencies]
 ttf-parser = { version = "^0.15", optional = true, default-features = true }
@@ -34,7 +32,7 @@ ttf-parser = { version = "^0.15", optional = true, default-features = true }
 [features]
 edit = ["std", "log", "ttf-parser"]
 log = ["std", "dep:log"]
-std = ["underscore_core/default_alloc", "underscore_core/default_vec"]
+std = ["base_64/default_alloc", "base_64/default_vec"]
 
 [profile.release]
 panic = "abort"

@@ -1,4 +1,5 @@
 use underscore_64::{
+    c_str,
     gfx::{
         mesh::{Mesh, Topology, Usage},
         program::Program,
@@ -11,10 +12,10 @@ use underscore_64::{
     },
 };
 
-const NAME: &str = "_64-triangle";
+static NAME: &[u8] = c_str!("_64-triangle");
 
 pub fn main() {
-    let window = Window::new(NAME.as_ptr(), 1920, 1080).expect("failed to open sdl2 window");
+    let window = Window::new(NAME, 1920, 1080).expect("failed to open sdl2 window");
 
     let program = Program::new(POS2D_RGB, RGB);
     program.bind();
