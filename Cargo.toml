@@ -11,7 +11,7 @@ name = "_64"
 path = "src/main.rs"
 
 [workspace]
-members = ["gui_64", "gfx_64", "base_64"]
+members = ["crates/gui_64", "crates/gfx_64", "crates/base_64", "crates/sdl_64"]
 
 [dependencies]
 base_64 = "^0.1.0"
@@ -21,18 +21,19 @@ sdl_64 = "^0.1.0"
 log = { version = "^0.4", optional = true, default-features = false }
 
 [patch.crates-io]
-base_64 = { path = "base_64" }
-gfx_64 = { path = "gfx_64" }
-gui_64 = { path = "gui_64" }
-sdl_64 = { path = "sdl_64" }
+base_64 = { path = "crates/base_64" }
+gfx_64 = { path = "crates/gfx_64" }
+gui_64 = { path = "crates/gui_64" }
+sdl_64 = { path = "crates/sdl_64" }
 
 [build-dependencies]
 ttf-parser = { version = "^0.15", optional = true, default-features = true }
 
 [features]
 edit = ["std", "log", "ttf-parser"]
-log = ["std", "dep:log"]
-std = ["base_64/default_alloc", "base_64/default_vec"]
+log = ["dep:log"]
+alloc = ["base_64/alloc"]
+std = ["alloc"]
 
 [profile.release]
 panic = "abort"

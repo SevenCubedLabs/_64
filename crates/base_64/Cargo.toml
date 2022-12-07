@@ -1,0 +1,15 @@
+[package]
+name = "base_64"
+description = "A minsize graphics library"
+version = "0.1.0"
+license = "MIT"
+authors = ["Zeno <zeno@sevencubed.tech>"]
+edition = "2018"
+
+[dependencies]
+log = {version = "^0.4", default-features = false }
+sdl2-sys = "^0.32"
+
+[features]
+default_vec = []
+alloc = []

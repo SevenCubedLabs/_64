@@ -29,15 +29,16 @@ static NAME: &[u8] = c_str!("_64");
 const WIDTH: i32 = 1920;
 const HEIGHT: i32 = 1080;
 
+use base_64::graph::Node;
 use gfx_64::{
     resource::{
         mesh::{Mesh, Topology, Usage},
-        program::Program,
+        pipeline::Pipeline,
         shader::{POS2D_TEX2D, TEX2D},
     },
-    GfxSystem, Resource, Target,
+    Draw, GfxSystem, RenderTarget, Resource,
 };
-use gui_64::text::TextSystem;
+use gui_64::{GuiSystem, HACK_TTF};
 use sdl_64::{
     event::{Event, EventFeed},
     window::Window,
@@ -54,12 +55,12 @@ mod simple_log {
 
     impl log::Log for SimpleLogger {
         fn enabled(&self, metadata: &Metadata) -> bool {
-            metadata.level() <= Level::Debug
+            metadata.level() <= Level::Trace
         }
 
         fn log(&self, record: &Record) {
             if self.enabled(record.metadata()) {
-                println!("[{:>5}] {}", record.level(), record.args());
+                println!("{:>7} |{}", format!("[{}]", record.level()), record.args());
             }
         }
 
@@ -70,7 +71,7 @@ mod simple_log {
         log::set_logger(&LOGGER)
             .map(|()| log::set_max_level(LevelFilter::Debug))
             .expect("failed to init logs");
-        log::info!("---BEGIN LOG---");
+        log::info!("logging enabled");
     }
 }
 
@@ -79,13 +80,14 @@ pub fn main() {
     #[cfg(feature = "log")]
     simple_log::init();
 
-    let window = Window::new(NAME, 1920, 1080).expect("window creation failed");
+    let gfx = Node::new(GfxSystem::new(NAME, 1920, 1080).expect("couldn't open SDL2/GL window"));
+    let gui = Node::new(GuiSystem::new([WIDTH, HEIGHT]));
 
-    let text = TextSystem::default();
+    let mut gfx = gfx.handle();
+    let mut gui = gui.handle();
 
-    let mut greets = gui_64::text::Text::new([1920, 1080]);
-    greets.update("hello\nworld");
-    text.draw(&greets, [1920, 1080], 0, 10.0);
+    let hack = gui.load_font(HACK_TTF).expect("load font failed");
+    gui.draw_text(hack, "hello\nworld", [0.0, HEIGHT as f32], 3.0);
 
     let tex_quad = Mesh::new(
         &[
@@ -98,19 +100,25 @@ pub fn main() {
         Topology::TriStrip,
     );
 
-    let glyph_prog = Program::new(POS2D_TEX2D, TEX2D);
-    glyph_prog.bind();
+    let glyph_prog = Pipeline::new(POS2D_TEX2D, TEX2D);
 
-    let mut events = EventFeed;
+    let mut events = EventFeed::new();
     events.text_input(true);
 
     #[cfg(feature = "log")]
-    simple_log::set_max_level(simple_log::LevelFilter::Off);
+    log::info!("main setup completed");
+    #[cfg(feature = "log")]
+    log::set_max_level(log::LevelFilter::Off);
 
+    let mut frame = 0;
     loop {
+        #[cfg(feature = "log")]
+        log::info!("starting frame {}", frame);
         match events.next() {
             Some(event) => match event {
                 Event::Quit => {
+                    #[cfg(feature = "log")]
+                    log::info!("quit event received");
                     break;
                 }
 
@@ -120,12 +128,8 @@ pub fn main() {
             None => {}
         };
 
-        window.bind();
-        window.clear_color([0.0, 0.0, 0.0, 1.0]);
-        window.viewport([0, 0], [WIDTH, HEIGHT]);
-        greets.view().bind();
-        tex_quad.draw();
-        window.swap();
+        gfx.draw(|| gui.draw());
+        frame += 1;
     }
 
     #[cfg(not(feature = "std"))]

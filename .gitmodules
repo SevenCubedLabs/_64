@@ -1,9 +1,15 @@
-[submodule "smol"]
-	path = smol
-	url = git@github.com:porocyon/smol
-[submodule "onekpaq"]
-	path = onekpaq
-	url = git@github.com:porocyon/onekpaq
-[submodule "./gfx_64/gl_64"]
-	path = gfx_64/gl_64
-	url = git@github.com:Zeno343/gl_64.git
+[submodule "crates/gfx_64/gl_64"]
+	path = crates/gfx_64/gl_64
+	url = git@github.com:Zeno343/gl_64
+[submodule "crates/gui_64/assets/Hack/"]
+	path = crates/gfx_64/assets/Hack
+	url = git@github.com:Zeno343/Hack.git
+[submodule "toolbox/smol"]
+	path = toolbox/smol
+	url = git@github.com:Zeno343/smol
+[submodule "toolbox/onekpaq"]
+	path = toolbox/onekpaq
+	url = git@github.com:Zeno343/onekpaq
+[submodule "crates/gui_64/assets/Hack"]
+	path = crates/gui_64/assets/Hack
+	url = git@github.com:Zeno343/Hack
