@@ -1,6 +1,8 @@
 [package]
 name = "gui_64"
+description = "This crate is all gooey..."
 version = "0.1.0"
+license = "MIT"
 edition = "2021"
 
 [dependencies]
