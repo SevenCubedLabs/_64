@@ -1,5 +1,5 @@
 [package]
-name = "_64"
+name = "project_64"
 description = "A minsize-oriented graphics engine"
 version = "0.1.0"
 license = "MIT"

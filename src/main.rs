@@ -34,7 +34,7 @@ use {
 };
 
 #[cfg(not(feature = "std"))]
-use _64::min_build::*;
+use project_64::min_build::*;
 
 #[cfg_attr(not(feature = "std"), no_mangle)]
 pub fn main() {

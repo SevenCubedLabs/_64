@@ -3,19 +3,6 @@
 version = 3
 
 [[package]]
-name = "_64"
-version = "0.1.0"
-dependencies = [
- "gfx_64",
- "gui_64",
- "log_64",
- "math_64",
- "mem_64",
- "sdl_64",
- "ttf-parser",
-]
-
-[[package]]
 name = "bindgen"
 version = "0.60.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -119,7 +106,7 @@ dependencies = [
 
 [[package]]
 name = "log_64"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "log",
 ]
@@ -171,6 +158,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d727cae5b39d21da60fa540906919ad737832fe0b1c165da3a34d6548c849d6"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "project_64"
+version = "0.1.0"
+dependencies = [
+ "gfx_64",
+ "gui_64",
+ "log_64",
+ "math_64",
+ "mem_64",
+ "sdl_64",
+ "ttf-parser",
 ]
 
 [[package]]
