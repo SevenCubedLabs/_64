@@ -1,0 +1,48 @@
+[package]
+name = "_64"
+description = "A minsize-oriented graphics engine"
+version = "0.1.0"
+license = "MIT"
+authors = ["Zeno <zeno@0x157.tech>"]
+edition = "2018"
+
+[[bin]]
+name = "_64"
+path = "src/main.rs"
+
+[workspace]
+members = [  "crates/log_64", "crates/mem_64", "crates/math_64", "crates/sdl_64", "crates/gui_64", "crates/gfx_64", ]
+
+[dependencies]
+math_64 = "^0.1.0"
+log_64 = "^0.1.0"
+mem_64 = "^0.1.0"
+gfx_64 = "^0.1.0"
+gui_64 = "^0.1.0"
+sdl_64 = "^0.1.0"
+
+[patch.crates-io]
+log_64 = { path = "crates/log_64" }
+mem_64 = { path = "crates/mem_64" }
+math_64 = { path = "crates/math_64" }
+gfx_64 = { path = "crates/gfx_64" }
+gui_64 = { path = "crates/gui_64" }
+sdl_64 = { path = "crates/sdl_64" }
+
+[build-dependencies]
+ttf-parser = { version = "^0.15", optional = true, default-features = true }
+
+[features]
+edit = ["std", "ttf-parser"]
+log = ["std"]
+std = []
+
+[profile.release]
+panic = "abort"
+lto = true
+incremental = true
+opt-level = "z"
+
+[profile.dev]
+panic = "abort"
+incremental = true

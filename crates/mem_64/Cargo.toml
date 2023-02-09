@@ -1,0 +1,7 @@
+[package]
+name = "mem_64"
+description = "I can't remember the last time I forgot something!"
+version = "0.1.0"
+license = "MIT"
+authors = ["Zeno <zeno@0x157.tech>"]
+edition = "2018"

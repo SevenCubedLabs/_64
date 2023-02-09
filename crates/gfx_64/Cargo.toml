@@ -1,0 +1,13 @@
+[package]
+name = "gfx_64"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+log_64 = "^0.1.0"
+math_64 = "^0.1.0"
+
+[build-dependencies]
+bindgen = {version = "0.60", default-features = false }
